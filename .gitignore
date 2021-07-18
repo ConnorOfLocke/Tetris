@@ -1,0 +1,15 @@
+Library*
+Temp/
+Obj/
+Builds/
+.vs/
+
+*.sln
+*.csproj
+*.suo
+*.swatch
+*.userprefs
+/Build
+/Build
+.vscode/
+

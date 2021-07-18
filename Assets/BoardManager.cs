@@ -428,11 +428,12 @@ public class BoardManager : MonoBehaviour
         bool validTurn = false;
         Vector3[] newStateOffsets = new Vector3[8];
         int[] newIndexs = new int[8];
-        RotationState nextRotationState = (RotationState)(((int)activeShapeRotationState + 1) % 4); 
+        RotationState nextRotationState = (RotationState)(((int)activeShapeRotationState + 1) % 4);
 
         if (AttemptWallKick(activeShapeObjectIndexs,
                             activeShapeRotationState,
                             nextRotationState,
+                            activeShapeType == ShapeType.I_Shape,
                             out newIndexs,
                             out newStateOffsets))
         {
@@ -460,6 +461,7 @@ public class BoardManager : MonoBehaviour
         if (AttemptWallKick(activeShapeObjectIndexs,
                             activeShapeRotationState,
                             nextRotationState,
+                            activeShapeType == ShapeType.I_Shape,
                             out newIndexs,
                             out newStateOffsets))
         {
@@ -1482,7 +1484,7 @@ public class BoardManager : MonoBehaviour
         return false;
     }
 
-    public bool AttemptWallKick(int[] currentState, RotationState curState, RotationState nextState, out int[] _returnState, out Vector3[] _returnOffsets)
+    public bool AttemptWallKick(int[] currentState, RotationState curState, RotationState nextState, bool is_IPiece, out int[] _returnState, out Vector3[] _returnOffsets)
     {
         int[] checkState = new int[8];
         Vector3[] checkOffset = new Vector3[8];
@@ -1499,259 +1501,660 @@ public class BoardManager : MonoBehaviour
         {
             case RotationState.Start:
                 //right
-                if (nextState == RotationState.Right)
+                if (is_IPiece)
                 {
-                    //(0,  0)
-                    CopyState(ref checkState, currentState);
-                    checkOffset = new Vector3[8];
-                    if (RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                    if (nextState == RotationState.Right) //0>>1
                     {
-                        _returnState = checkState;
-                        _returnOffsets = checkOffset;
-                        return true;
-                    }
-                    //(-1,  0)
-                    CopyState(ref checkState, currentState);
-                    checkOffset = new Vector3[8];
-                    if (MoveLeft(ref checkState) && RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
-                    {
-                        _returnState = checkState;
-                        for (int i = 0; i < 8; i++)
-                        {                             
-                            checkOffset[i] += new Vector3(-1, 0); 
-                        }
-                        _returnOffsets = checkOffset;
-                        return true;
-                    }
-                    //(-1,  1)
-                    CopyState(ref checkState, currentState);
-                    checkOffset = new Vector3[8];
-                    if (MoveLeft(ref checkState) && MoveUp(ref checkState) && RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
-                    {
-                        _returnState = checkState;
-                        for (int i = 0; i < 8; i++)
+                        //(0,  0)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
                         {
-                            checkOffset[i] += new Vector3(-1, 1);
+                            _returnState = checkState;
+                            _returnOffsets = checkOffset;
+                            return true;
                         }
-                        _returnOffsets = checkOffset;
-
-                        return true;
-                    }
-                    //(0   -2)
-                    CopyState(ref checkState, currentState);
-                    checkOffset = new Vector3[8];
-                    if (MoveDown(ref checkState) && MoveDown(ref checkState) && RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
-                    {
-                        _returnState = checkState;
-                        for (int i = 0; i < 8; i++)
+                        //(-2, 0)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (MoveLeft(ref checkState) && MoveLeft(ref checkState) && RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
                         {
-                            checkOffset[i] += new Vector3(0, -2);
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(-2, 0);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
                         }
-
-                        _returnOffsets = checkOffset;
-                        return true;
-                    }
-                    //(-1, -2)
-                    CopyState(ref checkState, currentState);
-                    checkOffset = new Vector3[8];
-                    if (MoveLeft(ref checkState) && MoveDown(ref checkState) && MoveDown(ref checkState) && RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
-                    {
-                        _returnState = checkState;
-                        for (int i = 0; i < 8; i++)
+                        //(1,  1)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (MoveRight(ref checkState) && MoveUp(ref checkState) && RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
                         {
-                            checkOffset[i] += new Vector3(-1, -2);
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(1, 1);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
                         }
-                        _returnOffsets = checkOffset;
-                        return true;
+                        //(-2, -1)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (MoveLeft(ref checkState) && MoveLeft(ref checkState) && MoveDown(ref checkState) && RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(-2, -1);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
+                        //(1,  2)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (MoveRight(ref checkState) && MoveUp(ref checkState) && MoveUp(ref checkState) && RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(1, 2);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
+                    }
+                    else // 0>>3
+                    {
+                        //(0, 0)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
+                        //(-1, 0)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (MoveLeft(ref checkState) && RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(-1, 0);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
+                        //(2, 0)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (MoveRight(ref checkState) && MoveRight(ref checkState) && RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(2, 0);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
+                        //(-1, 2)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (MoveLeft(ref checkState) && MoveUp(ref checkState) && MoveUp(ref checkState) && RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(-1, 2);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
+                        //(2, -1)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (MoveRight(ref checkState) && MoveRight(ref checkState) && MoveDown(ref checkState) && RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(2, -1);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
                     }
                 }
-                else //left
+                else
                 {
-                    //(0, 0)
-                    CopyState(ref checkState, currentState);
-                    checkOffset = new Vector3[8];
-                    if (RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                    if (nextState == RotationState.Right)
                     {
-                        _returnState = checkState;
-                        _returnOffsets = checkOffset;
-                        return true;
-                    }
-                    //(1, 0)
-                    CopyState(ref checkState, currentState);
-                    checkOffset = new Vector3[8];
-                    if (MoveRight(ref checkState) && RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
-                    {
-                        _returnState = checkState;
-                        for (int i = 0; i < 8; i++)
+                        //(0,  0)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
                         {
-                            checkOffset[i] += new Vector3(1, 0);
+                            _returnState = checkState;
+                            _returnOffsets = checkOffset;
+                            return true;
                         }
-                        _returnOffsets = checkOffset;
-                        return true;
-                    }
-                    //(1, 1)
-                    CopyState(ref checkState, currentState);
-                    checkOffset = new Vector3[8];
-                    if (MoveRight(ref checkState) && MoveUp(ref checkState) && RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
-                    {
-                        _returnState = checkState;
-                        for (int i = 0; i < 8; i++)
+                        //(-1,  0)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (MoveLeft(ref checkState) && RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
                         {
-                            checkOffset[i] += new Vector3(1, 1);
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(-1, 0);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
                         }
-                        _returnOffsets = checkOffset;
-                        return true;
-                    }
-                    //(0, -2)
-                    CopyState(ref checkState, currentState);
-                    checkOffset = new Vector3[8];
-                    if (MoveDown(ref checkState) && MoveDown(ref checkState) && RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
-                    {
-                        _returnState = checkState;
-                        for (int i = 0; i < 8; i++)
+                        //(-1,  1)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (MoveLeft(ref checkState) && MoveUp(ref checkState) && RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
                         {
-                            checkOffset[i] += new Vector3(0, -2);
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(-1, 1);
+                            }
+                            _returnOffsets = checkOffset;
+
+                            return true;
                         }
-                        _returnOffsets = checkOffset;
-                        return true;
-                    }
-                    //(1, -2)
-                    CopyState(ref checkState, currentState);
-                    checkOffset = new Vector3[8];
-                    if (MoveRight(ref checkState) && MoveDown(ref checkState) && MoveDown(ref checkState) && RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
-                    {
-                        _returnState = checkState;
-                        for (int i = 0; i < 8; i++)
+                        //(0   -2)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (MoveDown(ref checkState) && MoveDown(ref checkState) && RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
                         {
-                            checkOffset[i] += new Vector3(1, -2);
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(0, -2);
+                            }
+
+                            _returnOffsets = checkOffset;
+                            return true;
                         }
-                        _returnOffsets = checkOffset;
-                        return true;
+                        //(-1, -2)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (MoveLeft(ref checkState) && MoveDown(ref checkState) && MoveDown(ref checkState) && RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(-1, -2);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
+                    }
+                    else //left
+                    {
+                        //(0, 0)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
+                        //(1, 0)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (MoveRight(ref checkState) && RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(1, 0);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
+                        //(1, 1)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (MoveRight(ref checkState) && MoveUp(ref checkState) && RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(1, 1);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
+                        //(0, -2)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (MoveDown(ref checkState) && MoveDown(ref checkState) && RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(0, -2);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
+                        //(1, -2)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (MoveRight(ref checkState) && MoveDown(ref checkState) && MoveDown(ref checkState) && RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(1, -2);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
                     }
                 }
                 break;
-            case RotationState.Right:
-                if (nextState == RotationState.Down)
+            case RotationState.Right: 
+                if (is_IPiece)
                 {
-                    //(0, 0)
-                    CopyState(ref checkState, currentState);
-                    if (RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                    if (nextState == RotationState.Down) //1>>2
                     {
-                        _returnState = checkState;
-                        _returnOffsets = checkOffset;
-                        return true;
-                    }
-                    //(1, 0)
-                    CopyState(ref checkState, currentState);
-                    if (MoveRight(ref checkState) && RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
-                    {
-                        _returnState = checkState;
-                        for (int i = 0; i < 8; i++)
+                        //(0,0)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
                         {
-                            checkOffset[i] += new Vector3(1, 0);
+                            _returnState = checkState;
+                            _returnOffsets = checkOffset;
+                            return true;
                         }
-                        _returnOffsets = checkOffset;
-                        return true;
-                    }
-                    //(1, -1)
-                    CopyState(ref checkState, currentState);
-                    if (MoveRight(ref checkState) && MoveDown(ref checkState) && RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
-                    {
-                        _returnState = checkState;                       
-                        for (int i = 0; i < 8; i++)
+                        //(-1, 0)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (MoveLeft(ref checkState) && RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
                         {
-                            checkOffset[i] += new Vector3(1, -1);
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(-1, 0);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
                         }
-                        _returnOffsets = checkOffset;
-                        return true;
-                    }
-                    //(0, 2)
-                    CopyState(ref checkState, currentState);
-                    if (MoveUp(ref checkState) && MoveUp(ref checkState) && RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
-                    {
-                        _returnState = checkState;
-                        for (int i = 0; i < 8; i++)
+                        //(2, 0)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (MoveRight(ref checkState) && MoveRight(ref checkState) && RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
                         {
-                            checkOffset[i] += new Vector3(0, 2);
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(2, 0);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
                         }
-                        _returnOffsets = checkOffset;
-                        return true;
-                    }
-                    //(1, 2)
-                    CopyState(ref checkState, currentState);
-                    if (MoveRight(ref checkState) && MoveUp(ref checkState) && MoveUp(ref checkState) && RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
-                    {
-                        _returnState = checkState;
-                        for (int i = 0; i < 8; i++)
+                        //(-1, 2)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (MoveLeft(ref checkState) && MoveUp(ref checkState) && MoveUp(ref checkState) && RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
                         {
-                            checkOffset[i] += new Vector3(1, 2);
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(-1, 2);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
                         }
-                        _returnOffsets = checkOffset;
-                        return true;
+                        //(2, -1)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (MoveRight(ref checkState) && MoveRight(ref checkState) && MoveDown(ref checkState) && RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(2, -1);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
+                    }
+                    else //start //1>>0
+                    {
+                        //(0,0)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
+                        //(2,0)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (MoveRight(ref checkState) && MoveRight(ref checkState) && RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(2, 0);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
+                        //(-1,0)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (MoveLeft(ref checkState) && RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(-1, 0);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
+                        //(2,1)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (MoveRight(ref checkState) && MoveRight(ref checkState) && MoveUp(ref checkState) && RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(2, 1);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
+                        //(-1,-2)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (MoveLeft(ref checkState) && MoveDown(ref checkState) && MoveDown(ref checkState) && RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(-1, -2);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
                     }
                 }
-                else //Start
+                else
                 {
-                    //(0, 0)
-                    CopyState(ref checkState, currentState);
-                    if (RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                    if (nextState == RotationState.Down)
                     {
-                        _returnState = checkState;
-                        _returnOffsets = checkOffset;
-                        return true;
-                    }
-                    //(1, 0)
-                    CopyState(ref checkState, currentState);
-                    if (MoveRight(ref checkState) && RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
-                    {
-                        _returnState = checkState;
-                        for (int i = 0; i < 8; i++)
+                        //(0, 0)
+                        CopyState(ref checkState, currentState);
+                        if (RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
                         {
-                            checkOffset[i] += new Vector3(1, 0);
+                            _returnState = checkState;
+                            _returnOffsets = checkOffset;
+                            return true;
                         }
-                        _returnOffsets = checkOffset;
-                        return true;
-                    }
-                    //(1, -1)
-                    CopyState(ref checkState, currentState);
-                    if (MoveRight(ref checkState) && MoveDown(ref checkState) && RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
-                    {
-                        _returnState = checkState;
-                        for (int i = 0; i < 8; i++)
+                        //(1, 0)
+                        CopyState(ref checkState, currentState);
+                        if (MoveRight(ref checkState) && RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
                         {
-                            checkOffset[i] += new Vector3(1, -1);
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(1, 0);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
                         }
-                        _returnOffsets = checkOffset;
-                        return true;
-                    }
-                    //(0, 2)
-                    CopyState(ref checkState, currentState);
-                    if (MoveUp(ref checkState) && MoveUp(ref checkState) && RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
-                    {
-                        _returnState = checkState;
-                        for (int i = 0; i < 8; i++)
+                        //(1, -1)
+                        CopyState(ref checkState, currentState);
+                        if (MoveRight(ref checkState) && MoveDown(ref checkState) && RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
                         {
-                            checkOffset[i] += new Vector3(0, 2);
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(1, -1);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
                         }
-                        _returnOffsets = checkOffset;
-                        return true;
-                    }
-                    //(1, 2)
-                    CopyState(ref checkState, currentState);
-                    if (MoveRight(ref checkState) && MoveUp(ref checkState) && MoveUp(ref checkState) && RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
-                    {
-                        _returnState = checkState;
-                        for (int i = 0; i < 8; i++)
+                        //(0, 2)
+                        CopyState(ref checkState, currentState);
+                        if (MoveUp(ref checkState) && MoveUp(ref checkState) && RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
                         {
-                            checkOffset[i] += new Vector3(1, 2);
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(0, 2);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
                         }
-                        _returnOffsets = checkOffset;
-                        return true;
+                        //(1, 2)
+                        CopyState(ref checkState, currentState);
+                        if (MoveRight(ref checkState) && MoveUp(ref checkState) && MoveUp(ref checkState) && RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(1, 2);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
+                    }
+                    else //Start
+                    {
+                        //(0, 0)
+                        CopyState(ref checkState, currentState);
+                        if (RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
+                        //(1, 0)
+                        CopyState(ref checkState, currentState);
+                        if (MoveRight(ref checkState) && RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(1, 0);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
+                        //(1, -1)
+                        CopyState(ref checkState, currentState);
+                        if (MoveRight(ref checkState) && MoveDown(ref checkState) && RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(1, -1);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
+                        //(0, 2)
+                        CopyState(ref checkState, currentState);
+                        if (MoveUp(ref checkState) && MoveUp(ref checkState) && RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(0, 2);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
+                        //(1, 2)
+                        CopyState(ref checkState, currentState);
+                        if (MoveRight(ref checkState) && MoveUp(ref checkState) && MoveUp(ref checkState) && RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(1, 2);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
                     }
                 }
                 break;
             case RotationState.Down:
-                if (nextState == RotationState.Left)
+                if (is_IPiece)
+                {
+                    if (nextState == RotationState.Left) //2>>3
+                    {
+                        //(0,0)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
+                        //(2,0)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (MoveRight(ref checkState) && MoveRight(ref checkState) && RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(2, 0);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
+                        //(-1,0)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (MoveLeft(ref checkState) && RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(-1, 0);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
+                        //(2, 1)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (MoveRight(ref checkState) && MoveRight(ref checkState) && MoveUp(ref checkState) && RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(2, 1);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
+                        //(-1,-2)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (MoveLeft(ref checkState) && MoveDown(ref checkState) && MoveDown(ref checkState) && RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(-1, -2);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
+                    }
+                    else //right //2>>1
+                    {
+                        //(0,0)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
+                        //(1,  0)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (MoveRight(ref checkState) && RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(1, 0);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
+                        //(-2, 0)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (MoveLeft(ref checkState) && MoveLeft(ref checkState) && RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(-2, 0);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
+                        //(1, -2)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (MoveRight(ref checkState) && MoveDown(ref checkState) && MoveDown(ref checkState) && RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(1, -2);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
+                        //(-2, 1)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (MoveLeft(ref checkState) && MoveLeft(ref checkState) && MoveDown(ref checkState) && MoveUp(ref checkState) && RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(-2, 1);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
+                    }
+                }
+                else
+                { 
+                    if (nextState == RotationState.Left)
                 {
                     //(0, 0)
                     CopyState(ref checkState, currentState);
@@ -1810,7 +2213,7 @@ public class BoardManager : MonoBehaviour
                         return true;
                     }
                 }
-                else //right
+                    else //right
                 {
                     //(0, 0)
                     CopyState(ref checkState, currentState);
@@ -1869,125 +2272,260 @@ public class BoardManager : MonoBehaviour
                         return true;
                     }
                 }
+                }
                 break;
             case RotationState.Left:
-                if (nextState == RotationState.Start)
+                if (is_IPiece)
                 {
-                    //(0,  0)
-                    CopyState(ref checkState, currentState);
-                    if (RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                    if (nextState == RotationState.Start) //3>>0
                     {
-                        _returnState = checkState;
-                        _returnOffsets = checkOffset;
-                        return true;
-                    }
-                    //(-1,  0)
-                    CopyState(ref checkState, currentState);
-                    if (MoveLeft(ref checkState) && RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
-                    {
-                        _returnState = checkState;
-                        for (int i = 0; i < 8; i++)
+                        //(0,0)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
                         {
-                            checkOffset[i] += new Vector3(-1, 0);
+                            _returnState = checkState;
+                            _returnOffsets = checkOffset;
+                            return true;
                         }
-                        _returnOffsets = checkOffset;
-                        return true;
-                    }
-                    //(-1, -1)
-                    CopyState(ref checkState, currentState);
-                    if (MoveLeft(ref checkState) && MoveDown(ref checkState) && RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
-                    {
-                        _returnState = checkState;
-                        for (int i = 0; i < 8; i++)
+                        //(1,0)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (MoveRight(ref checkState) && RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
                         {
-                            checkOffset[i] += new Vector3(-1, -1);
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(1, 0);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
                         }
-                        _returnOffsets = checkOffset;
-                        return true;
-                    }
-                    //(0,   2)
-                    CopyState(ref checkState, currentState);
-                    if (MoveUp(ref checkState) && MoveUp(ref checkState) && RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
-                    {
-                        _returnState = checkState;
-                        for (int i = 0; i < 8; i++)
+                        //(-2, 0)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (MoveLeft(ref checkState) && MoveLeft(ref checkState) && RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
                         {
-                            checkOffset[i] += new Vector3(0, 2);
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(-2, 0);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
                         }
-                        _returnOffsets = checkOffset;
-                        return true;
-                    }
-                    //(-1,  2)
-                    CopyState(ref checkState, currentState);
-                    if (MoveLeft(ref checkState) && MoveUp(ref checkState) && MoveUp(ref checkState) && RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
-                    {
-                        _returnState = checkState;
-                        for (int i = 0; i < 8; i++)
+                        //(1, -2)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (MoveRight(ref checkState) && MoveDown(ref checkState) && MoveDown(ref checkState) && RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
                         {
-                            checkOffset[i] += new Vector3(-1, 2);
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(1, -2);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
                         }
-                        _returnOffsets = checkOffset;
-                        return true;
+                        //(-2, 1)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (MoveLeft(ref checkState) && MoveLeft(ref checkState) && MoveUp(ref checkState) && RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(-2, 1);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
+                    } 
+                    else //down //3>>2
+                    {
+                        //(0,0)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
+                        //(-2,0)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (MoveLeft(ref checkState) && MoveLeft(ref checkState) && RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(-2, 0);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
+                        //(1,0)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (MoveRight(ref checkState) && RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(1, 0);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
+                        //(-2,-1)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (MoveLeft(ref checkState) && MoveLeft(ref checkState) && MoveDown(ref checkState) && RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(-2, -1);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
+                        //(1,2)
+                        CopyState(ref checkState, currentState);
+                        checkOffset = new Vector3[8];
+                        if (MoveRight(ref checkState) && MoveUp(ref checkState) && MoveUp(ref checkState) && RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(1, 2);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
                     }
                 }
-                else //down
+                else
                 {
-                    //(0,  0)
-                    CopyState(ref checkState, currentState);
-                    if (RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                    if (nextState == RotationState.Start)
                     {
-                        _returnState = checkState;
-                        _returnOffsets = checkOffset;
+                        //(0,  0)
+                        CopyState(ref checkState, currentState);
+                        if (RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
+                        //(-1,  0)
+                        CopyState(ref checkState, currentState);
+                        if (MoveLeft(ref checkState) && RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(-1, 0);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
+                        //(-1, -1)
+                        CopyState(ref checkState, currentState);
+                        if (MoveLeft(ref checkState) && MoveDown(ref checkState) && RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(-1, -1);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
+                        //(0,   2)
+                        CopyState(ref checkState, currentState);
+                        if (MoveUp(ref checkState) && MoveUp(ref checkState) && RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(0, 2);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
+                        //(-1,  2)
+                        CopyState(ref checkState, currentState);
+                        if (MoveLeft(ref checkState) && MoveUp(ref checkState) && MoveUp(ref checkState) && RotateRight(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(-1, 2);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
+                    }
+                    else //down
+                    {
+                        //(0,  0)
+                        CopyState(ref checkState, currentState);
+                        if (RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            _returnOffsets = checkOffset;
 
-                        return true;
-                    }
-                    //(-1,  0)
-                    CopyState(ref checkState, currentState);
-                    if (MoveLeft(ref checkState) && RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
-                    {
-                        _returnState = checkState;
-                        for (int i = 0; i < 8; i++)
-                        {
-                            checkOffset[i] += new Vector3(-1, 0);
+                            return true;
                         }
-                        _returnOffsets = checkOffset;
-                        return true;
-                    }
-                    //(-1, -1)
-                    CopyState(ref checkState, currentState);
-                    if (MoveLeft(ref checkState) && MoveDown(ref checkState) && RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
-                    {
-                        _returnState = checkState;
-                        for (int i = 0; i < 8; i++)
+                        //(-1,  0)
+                        CopyState(ref checkState, currentState);
+                        if (MoveLeft(ref checkState) && RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
                         {
-                            checkOffset[i] += new Vector3(-1, -1);
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(-1, 0);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
                         }
-                        _returnOffsets = checkOffset;
-                        return true;
-                    }
-                    //(0,  2)
-                    CopyState(ref checkState, currentState);
-                    if (MoveUp(ref checkState) && MoveUp(ref checkState) && RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
-                    {
-                        _returnState = checkState;
-                        for (int i = 0; i < 8; i++)
+                        //(-1, -1)
+                        CopyState(ref checkState, currentState);
+                        if (MoveLeft(ref checkState) && MoveDown(ref checkState) && RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
                         {
-                            checkOffset[i] += new Vector3(0, 2);
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(-1, -1);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
                         }
-                        _returnOffsets = checkOffset;
-                        return true;
-                    }
-                    //(-1,  2)
-                    CopyState(ref checkState, currentState);
-                    if (MoveLeft(ref checkState) && MoveUp(ref checkState) && MoveUp(ref checkState) && RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
-                    {
-                        _returnState = checkState;
-                        for (int i = 0; i < 8; i++)
+                        //(0,  2)
+                        CopyState(ref checkState, currentState);
+                        if (MoveUp(ref checkState) && MoveUp(ref checkState) && RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
                         {
-                            checkOffset[i] += new Vector3(-1, 2);
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(0, 2);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
                         }
-                        _returnOffsets = checkOffset;
-                        return true;
+                        //(-1,  2)
+                        CopyState(ref checkState, currentState);
+                        if (MoveLeft(ref checkState) && MoveUp(ref checkState) && MoveUp(ref checkState) && RotateLeft(ref checkState, ref checkOffset) && CheckConflicts(checkState))
+                        {
+                            _returnState = checkState;
+                            for (int i = 0; i < 8; i++)
+                            {
+                                checkOffset[i] += new Vector3(-1, 2);
+                            }
+                            _returnOffsets = checkOffset;
+                            return true;
+                        }
                     }
                 }
                 break;

@@ -157,6 +157,14 @@ MonoBehaviour:
     type: 3}
   stepsPerMinute: 120
   boardCamera: {fileID: 963194229}
+  materialSet:
+    LPieceMaterial: {fileID: 2100000, guid: a74c5046b0eac02478507627df2554bf, type: 2}
+    JPieceMaterial: {fileID: 2100000, guid: 7c83b3ba85a8b964f81a40cb1eb2a080, type: 2}
+    ZPieceMaterial: {fileID: 2100000, guid: 2fb0555c396f3bf42bc59d2cc9739e0e, type: 2}
+    SPieceMaterial: {fileID: 2100000, guid: e42f543de3c9e62499538984840f1078, type: 2}
+    TPieceMaterial: {fileID: 2100000, guid: 937a0242e1a95254dad83268d9c7f64e, type: 2}
+    OPieceMaterial: {fileID: 2100000, guid: 8ae06d8b7b63c5849bfbc97deb3c76b8, type: 2}
+    IPieceMaterial: {fileID: 2100000, guid: 0916d9fbffbb03c42bc3cfd562c0823a, type: 2}
 --- !u!4 &306170492
 Transform:
   m_ObjectHideFlags: 0

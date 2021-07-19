@@ -12,7 +12,7 @@ public class BoardCamera : MonoBehaviour
         Vector3 camPosition = _boardManager.transform.position;
 
         camPosition += new Vector3(BoardManager.BoardWidth  * 0.5f   - 0.5f,
-                                   BoardManager.BoardHeight * 0.5f  - 0.5f,
+                                   BoardManager.AdjBoardHeight * 0.5f  + 0.5f,
                                    -60);
 
         //set position

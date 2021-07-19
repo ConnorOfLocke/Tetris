@@ -8,7 +8,7 @@ public class BoardManager : MonoBehaviour
     public const int BoardWidth = 10;
     public const int BoardHeight = 20;
     
-    public int AdjBoardHeight => BoardHeight + 2;
+    public static int AdjBoardHeight => BoardHeight + 2;
 
     [SerializeField]
     private Transform prefabCellParent = null;
@@ -23,6 +23,9 @@ public class BoardManager : MonoBehaviour
 
     [SerializeField]
     private BoardCamera boardCamera;
+
+    [SerializeField]
+    MaterialSet materialSet;
 
     private BoardCell[] boardCells = null;
     private GameObject[] boardCellObjects = null;
@@ -161,16 +164,38 @@ public class BoardManager : MonoBehaviour
         activeShapeType = _shapeType;
 
         int[] dataset = null;
+        Material shapeMaterial = null;
         switch (_shapeType)
         {
             //all 4x2 shapes
-            case ShapeType.L_Shape: dataset = ShapeData.LShape; break;
-            case ShapeType.J_Shape: dataset = ShapeData.JShape; break;
-            case ShapeType.Z_Shape: dataset = ShapeData.ZShape; break;
-            case ShapeType.S_Shape: dataset = ShapeData.SShape; break;
-            case ShapeType.T_Shape: dataset = ShapeData.TShape; break;
-            case ShapeType.O_Shape: dataset = ShapeData.OShape; break;
-            case ShapeType.I_Shape: dataset = ShapeData.IShape; break;
+            case ShapeType.L_Shape: 
+                dataset = ShapeData.LShape;
+                shapeMaterial = materialSet.LPieceMaterial;
+                break;
+            case ShapeType.J_Shape: 
+                dataset = ShapeData.JShape;
+                shapeMaterial = materialSet.JPieceMaterial;
+                break;
+            case ShapeType.Z_Shape:
+                dataset = ShapeData.ZShape;
+                shapeMaterial = materialSet.ZPieceMaterial;
+                break;
+            case ShapeType.S_Shape:
+                dataset = ShapeData.SShape;
+                shapeMaterial = materialSet.SPieceMaterial;
+                break;
+            case ShapeType.T_Shape:
+                dataset = ShapeData.TShape;
+                shapeMaterial = materialSet.TPieceMaterial;
+                break;
+            case ShapeType.O_Shape: 
+                dataset = ShapeData.OShape;
+                shapeMaterial = materialSet.OPieceMaterial;
+                break;
+            case ShapeType.I_Shape: 
+                dataset = ShapeData.IShape;
+                shapeMaterial = materialSet.IPieceMaterial;
+                break;
         }
 
         activeShapeObjectIndexs = new int[8];
@@ -198,16 +223,25 @@ public class BoardManager : MonoBehaviour
             }
         }
 
+        GameObject MakeNewCellObject(Vector3 _spawnPoint, int x, int y)
+        {
+            GameObject _returnObject = GameObject.Instantiate(prefabCellObject, _spawnPoint + new Vector3(x,y,0), Quaternion.identity, prefabCellParent);
+            Renderer _renderer = _returnObject.GetComponent<Renderer>();
+            if (_renderer != null)
+                _renderer.material = shapeMaterial;
+            return _returnObject;
+        }
+
         activeShapeObjectSet = new GameObject[8];
         Vector3 spawnPoint = new Vector3(3, 20, 0);
-        activeShapeObjectSet[0] = dataset[0] == 1 ? GameObject.Instantiate(prefabCellObject, spawnPoint + new Vector3(0, 0, 0), Quaternion.identity, prefabCellParent) : null;
-        activeShapeObjectSet[1] = dataset[1] == 1 ? GameObject.Instantiate(prefabCellObject, spawnPoint + new Vector3(1, 0, 0), Quaternion.identity, prefabCellParent) : null;
-        activeShapeObjectSet[2] = dataset[2] == 1 ? GameObject.Instantiate(prefabCellObject, spawnPoint + new Vector3(2, 0, 0), Quaternion.identity, prefabCellParent) : null;
-        activeShapeObjectSet[3] = dataset[3] == 1 ? GameObject.Instantiate(prefabCellObject, spawnPoint + new Vector3(3, 0, 0), Quaternion.identity, prefabCellParent) : null;
-        activeShapeObjectSet[4] = dataset[4] == 1 ? GameObject.Instantiate(prefabCellObject, spawnPoint + new Vector3(0, 1, 0), Quaternion.identity, prefabCellParent) : null;
-        activeShapeObjectSet[5] = dataset[5] == 1 ? GameObject.Instantiate(prefabCellObject, spawnPoint + new Vector3(1, 1, 0), Quaternion.identity, prefabCellParent) : null;
-        activeShapeObjectSet[6] = dataset[6] == 1 ? GameObject.Instantiate(prefabCellObject, spawnPoint + new Vector3(2, 1, 0), Quaternion.identity, prefabCellParent) : null;
-        activeShapeObjectSet[7] = dataset[7] == 1 ? GameObject.Instantiate(prefabCellObject, spawnPoint + new Vector3(3, 1, 0), Quaternion.identity, prefabCellParent) : null;
+        activeShapeObjectSet[0] = dataset[0] == 1 ? MakeNewCellObject(spawnPoint, 0, 0) : null;
+        activeShapeObjectSet[1] = dataset[1] == 1 ? MakeNewCellObject(spawnPoint, 1, 0) : null;
+        activeShapeObjectSet[2] = dataset[2] == 1 ? MakeNewCellObject(spawnPoint, 2, 0) : null;
+        activeShapeObjectSet[3] = dataset[3] == 1 ? MakeNewCellObject(spawnPoint, 3, 0) : null;
+        activeShapeObjectSet[4] = dataset[4] == 1 ? MakeNewCellObject(spawnPoint, 0, 1) : null;
+        activeShapeObjectSet[5] = dataset[5] == 1 ? MakeNewCellObject(spawnPoint, 1, 1) : null;
+        activeShapeObjectSet[6] = dataset[6] == 1 ? MakeNewCellObject(spawnPoint, 2, 1) : null;
+        activeShapeObjectSet[7] = dataset[7] == 1 ? MakeNewCellObject(spawnPoint, 3, 1) : null;
 
         activeShapeRotationState = RotationState.Start;
 
@@ -2655,6 +2689,19 @@ public class BoardManager : MonoBehaviour
         }
     }
 }
+
+[Serializable]
+public struct MaterialSet
+{    
+    [SerializeField] public Material LPieceMaterial;
+    [SerializeField] public Material JPieceMaterial;
+    [SerializeField] public Material ZPieceMaterial;
+    [SerializeField] public Material SPieceMaterial;
+    [SerializeField] public Material TPieceMaterial;
+    [SerializeField] public Material OPieceMaterial;
+    [SerializeField] public Material IPieceMaterial;
+}
+
 
 public enum ShapeType
 {

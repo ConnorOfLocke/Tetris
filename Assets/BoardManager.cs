@@ -6,8 +6,7 @@ using UnityEngine;
 public class BoardManager : MonoBehaviour
 {
     public const int BoardWidth = 10;
-    public const int BoardHeight = 20;
-    
+    public const int BoardHeight = 20;    
     public static int AdjBoardHeight => BoardHeight + 2;
 
     [SerializeField]
@@ -19,18 +18,20 @@ public class BoardManager : MonoBehaviour
     private GameObject prefabEmptyCellObject = null;
 
     [SerializeField]
-    private float stepsPerMinute = 30.0f;
+    private BoardCamera boardCamera;
 
     [SerializeField]
-    private BoardCamera boardCamera;
+    private BoardUI boardUI;
 
     [SerializeField]
     MaterialSet materialSet;
 
+    [SerializeField]
+    LevelInfo levelInfo;
+
     private BoardCell[] boardCells = null;
     private GameObject[] boardCellObjects = null;
-
-    private GameObject[] boardCellEmptyObjects;
+    private GameObject[] boardCellEmptyObjects = null;
 
     private ShapeType activeShapeType;
     private RotationState activeShapeRotationState;
@@ -40,17 +41,28 @@ public class BoardManager : MonoBehaviour
     private float stepTimer = 0.0f;
     private bool isPlaying = true;
 
+    private long score = 0;
+    private int linesCleared = 0;
+    private int curLevel => linesCleared / 10;
+
     private List<ShapeType> shapePool = new List<ShapeType>();
+
+    public long Score => score;
+    public long CurLevel => curLevel;
 
     public void Start()
     {
         ResetBoard();
 
         boardCamera.SetupCamera(this);
+        boardUI.Initialise(this);
     }
 
     public void ResetBoard()
     {
+        score = 0;
+        linesCleared = 0;
+
         //clear out the old board objects
         if (boardCellObjects != null)
         {
@@ -266,9 +278,9 @@ public class BoardManager : MonoBehaviour
 
     public void UpdateSteps()
     {
-        if (stepTimer > 60.0f / stepsPerMinute)
+        if (stepTimer > 60.0f / levelInfo.GetStepsPerLevel(curLevel))
         {
-            stepTimer -= 60.0f / stepsPerMinute;
+            stepTimer -= 60.0f / levelInfo.GetStepsPerLevel(curLevel);
 
             //if we can't move down, place and solve
             if (!MoveDownSimple())
@@ -485,8 +497,21 @@ public class BoardManager : MonoBehaviour
         
         if (rowsCompleteThisSolve > 0)
         {
-            Debug.Log($"Solved {rowsCompleteThisSolve} this round");
+            switch (rowsCompleteThisSolve)
+            {
+                case 1:
+                    score += 40 * (curLevel + 1); break;
+                case 2:
+                    score += 100 * (curLevel + 1); break;
+                case 3:
+                    score += 300 * (curLevel + 1); break;
+                case 4:
+                    score += 1200 * (curLevel + 1); break;
+            }
+            Debug.Log($"Solved {rowsCompleteThisSolve} this round");            
         }
+        linesCleared += rowsCompleteThisSolve;
+        
 
         //Attempt to spawn a new object
         ShapeType nextShape = GetNextShape();

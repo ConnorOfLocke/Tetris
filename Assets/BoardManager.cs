@@ -5,24 +5,29 @@ using UnityEngine;
 
 public class BoardManager : MonoBehaviour
 {
-    [SerializeField]
-    private int BoardWidth = 10;
-
-    [SerializeField]
-    private int BoardHeight = 10;
-    private int AdjBoardHeight => BoardHeight + 2;
+    public const int BoardWidth = 10;
+    public const int BoardHeight = 20;
+    
+    public int AdjBoardHeight => BoardHeight + 2;
 
     [SerializeField]
     private Transform prefabCellParent = null;
 
     [SerializeField]
     private GameObject prefabCellObject = null;
+    [SerializeField]
+    private GameObject prefabEmptyCellObject = null;
 
     [SerializeField]
     private float stepsPerMinute = 30.0f;
 
+    [SerializeField]
+    private BoardCamera boardCamera;
+
     private BoardCell[] boardCells = null;
     private GameObject[] boardCellObjects = null;
+
+    private GameObject[] boardCellEmptyObjects;
 
     private ShapeType activeShapeType;
     private RotationState activeShapeRotationState;
@@ -37,6 +42,8 @@ public class BoardManager : MonoBehaviour
     public void Start()
     {
         ResetBoard();
+
+        boardCamera.SetupCamera(this);
     }
 
     public void ResetBoard()
@@ -66,6 +73,26 @@ public class BoardManager : MonoBehaviour
             }
         }
 
+        if (boardCellEmptyObjects == null)
+        {
+            boardCellEmptyObjects = new GameObject[BoardWidth * AdjBoardHeight];
+            for (int i = 0; i < boardCellEmptyObjects.Length; i++)
+            {
+                boardCellEmptyObjects[i] = Instantiate(prefabEmptyCellObject,
+                                                        new Vector3(i % BoardWidth, i / BoardWidth),
+                                                        Quaternion.identity,
+                                                        prefabCellParent);                
+            }
+        }
+        else
+        {
+            boardCellEmptyObjects = new GameObject[BoardWidth * AdjBoardHeight];
+            for (int i = 0; i < boardCellEmptyObjects.Length; i++)
+            {
+                boardCellEmptyObjects[i].SetActive(true);
+            }
+        }
+
         //Make the board
         boardCells = new BoardCell[BoardWidth * AdjBoardHeight];
         boardCellObjects = new GameObject[BoardHeight * AdjBoardHeight];
@@ -86,8 +113,29 @@ public class BoardManager : MonoBehaviour
         isPlaying = true;
 
         //Make the first Shape to start moving
-        activeShapeType = GetNextShape();
+        activeShapeType = ShapeType.I_Shape;// GetNextShape();
         CreateNewShape(activeShapeType);
+
+    }
+
+    public void UpdateEmptyCells()
+    {
+        //emplaced cells
+        for (int i = 0; i < BoardWidth * AdjBoardHeight; i++ )
+        {
+            if (boardCellObjects[i] != null)
+                boardCellEmptyObjects[i].SetActive(false);
+            else
+                boardCellEmptyObjects[i].SetActive(true);
+        }
+
+        //active objects
+        for (int i = 0; i < 8; i++)
+        {
+            if (activeShapeObjectIndexs[i] != -1)
+                boardCellEmptyObjects[activeShapeObjectIndexs[i]].SetActive(false);
+        }
+
     }
 
     public ShapeType GetNextShape()
@@ -163,6 +211,7 @@ public class BoardManager : MonoBehaviour
 
         activeShapeRotationState = RotationState.Start;
 
+        UpdateEmptyCells();
         return true;
     }
 
@@ -207,9 +256,12 @@ public class BoardManager : MonoBehaviour
         {
             MoveRightSimple();
         }
-        else if (Input.GetKeyDown(KeyCode.P))
+        else if (Input.GetKeyDown(KeyCode.DownArrow))
         {
-            MoveDownSimple();
+            if (!MoveDownSimple())
+            {
+                PlaceAndCheckState();
+            }
         }
         else if (Input.GetKeyDown(KeyCode.Space))
         {
@@ -224,10 +276,6 @@ public class BoardManager : MonoBehaviour
         else if (Input.GetKeyDown(KeyCode.W))
         {
             RotateRight();
-        }
-        else if (Input.GetKey(KeyCode.DownArrow))
-        {
-            stepTimer += Time.deltaTime;
         }
     }
 
@@ -266,6 +314,8 @@ public class BoardManager : MonoBehaviour
                 if (activeShapeObjectIndexs[i] != -1)
                     activeShapeObjectIndexs[i] -= 1;
             }
+
+            UpdateEmptyCells();
         }
     }
 
@@ -300,6 +350,8 @@ public class BoardManager : MonoBehaviour
                 if (activeShapeObjectIndexs[i] != -1)
                     activeShapeObjectIndexs[i] += 1;
             }
+
+            UpdateEmptyCells();
         }
     }
 
@@ -335,6 +387,8 @@ public class BoardManager : MonoBehaviour
                 if (activeShapeObjectIndexs[i] != -1)
                     activeShapeObjectIndexs[i] -= BoardWidth;
             }
+
+            UpdateEmptyCells();
         }
 
         return validMove;
@@ -416,6 +470,9 @@ public class BoardManager : MonoBehaviour
         {
             if (_indexs[i] != -1)
             {
+                if (_indexs[i] < 0)
+                    Debug.Log("SCREM");
+
                 if (boardCells[_indexs[i]].isFilled)
                     return false;
             }
@@ -446,8 +503,10 @@ public class BoardManager : MonoBehaviour
                 if (activeShapeObjectSet[i] != null)
                     activeShapeObjectSet[i].transform.position += newStateOffsets[i];
             }
+            UpdateEmptyCells();
         }
        
+
         return validTurn;
     }
 
@@ -474,22 +533,10 @@ public class BoardManager : MonoBehaviour
                 if (activeShapeObjectSet[i] != null)
                     activeShapeObjectSet[i].transform.position += newStateOffsets[i];
             }
-        }
-        
-        return validTurn;
 
+            UpdateEmptyCells();
+        }
 
-        if (validTurn)
-        {
-            RotationState prevthing = activeShapeRotationState;
-            activeShapeRotationState = (RotationState)(((int)activeShapeRotationState - 1) < 0 ? 3 : ((int)activeShapeRotationState - 1));
-            Debug.Log($"Moved from {prevthing} to {activeShapeRotationState}");
-        }
-        else
-        {
-            Debug.Log($"Failed to turn right from {activeShapeRotationState}");
-        }
-        
         return validTurn;
     }
 

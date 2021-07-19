@@ -1151,6 +1151,8 @@ public class BoardManager : MonoBehaviour
                             //_outOffset[1] //pivot
                             _outOffset[2] += new Vector3(1, -1, 0);
                             _outOffset[4] += new Vector3(0, 2, 0);
+
+                            return true;
                         }
                     }
                     else if (activeShapeRotationState == RotationState.Down)
@@ -1319,6 +1321,8 @@ public class BoardManager : MonoBehaviour
                             //_outOffset[1] //pivot
                             _outOffset[5] += new Vector3(-1, 1, 0);
                             _outOffset[6] += new Vector3(0, 2, 0);
+                        
+                            return true;
                         }
                     }
                     else if (activeShapeRotationState == RotationState.Right)
@@ -1335,6 +1339,8 @@ public class BoardManager : MonoBehaviour
                             //_outOffset[1] //pivot
                             _outOffset[5] += new Vector3(-1, -1, 0);
                             _outOffset[6] += new Vector3(-2, 0, 0);
+
+                            return true;
                         }
                     }
                 }
@@ -1355,6 +1361,8 @@ public class BoardManager : MonoBehaviour
                             //_outOffset[1] //pivot
                             _outOffset[2] += new Vector3(-1, -1, 0);
                             _outOffset[5] += new Vector3(1, -1, 0);
+                            
+                            return true;
                         }
                     }
                     else if (activeShapeRotationState == RotationState.Left)
@@ -1371,6 +1379,8 @@ public class BoardManager : MonoBehaviour
                             //_outOffset[1] //pivot
                             _outOffset[2] += new Vector3(1, -1, 0);
                             _outOffset[5] += new Vector3(1, 1, 0);
+                            
+                            return true;
                         }
                     }
                     else if (activeShapeRotationState == RotationState.Down)
@@ -1387,6 +1397,8 @@ public class BoardManager : MonoBehaviour
                             //_outOffset[1] //pivot
                             _outOffset[2] += new Vector3(1, 1, 0);
                             _outOffset[5] += new Vector3(-1, 1, 0);
+                            
+                            return true;
                         }
                     }
                     else if (activeShapeRotationState == RotationState.Right)
@@ -1403,6 +1415,8 @@ public class BoardManager : MonoBehaviour
                             //_outOffset[1] //pivot
                             _outOffset[2] += new Vector3(-1, 1, 0);
                             _outOffset[5] += new Vector3(-1, -1, 0);
+                        
+                            return true;
                         }
                     }
                 }
@@ -1426,6 +1440,8 @@ public class BoardManager : MonoBehaviour
                             _outOffset[1] += new Vector3(1, 0, 0);
                             _outOffset[2] += new Vector3(0, -1, 0);
                             _outOffset[3] += new Vector3(-1, -2, 0);
+                            
+                            return true;
                         }
                     }
                     else if (activeShapeRotationState == RotationState.Left)
@@ -1443,12 +1459,15 @@ public class BoardManager : MonoBehaviour
                             _outOffset[1] += new Vector3(0, 1, 0);
                             _outOffset[2] += new Vector3(1, 0, 0);
                             _outOffset[3] += new Vector3(2, -1, 0);
+
+                            return true;
                         }
                     }
                     else if (activeShapeRotationState == RotationState.Down)
                     {
-                        //top border
-                        if (_outstate[1] + BoardWidth * 2 < BoardWidth * AdjBoardHeight)
+                        //check up 2 blocks and down 1 block
+                        if (_outstate[1] + BoardWidth * 2 < BoardWidth * AdjBoardHeight &&
+                            _outstate[1] - BoardWidth >= 0)
                         {
                             _outstate[0] += -2 - BoardWidth;
                             _outstate[1] += -1;
@@ -1459,6 +1478,8 @@ public class BoardManager : MonoBehaviour
                             _outOffset[1] += new Vector3(-1, 0, 0);
                             _outOffset[2] += new Vector3(0, 1, 0);
                             _outOffset[3] += new Vector3(1, 2, 0);
+                     
+                            return true;
                         }
                     }
                     else if (activeShapeRotationState == RotationState.Right)
@@ -1476,6 +1497,8 @@ public class BoardManager : MonoBehaviour
                             _outOffset[1] += new Vector3(0, -1, 0);
                             _outOffset[2] += new Vector3(-1, 0, 0);
                             _outOffset[3] += new Vector3(-2, 1, 0);
+                        
+                            return true;
                         }
                     }
                 }

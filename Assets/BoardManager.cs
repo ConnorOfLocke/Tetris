@@ -94,6 +94,18 @@ public class BoardManager : MonoBehaviour
             }
         }
 
+        if (nextObjectSet != null)
+        {
+            for (int i = 0; i < nextObjectSet.Length; i++)
+            {
+                if (nextObjectSet[i] != null)
+                {
+                    Destroy(nextObjectSet[i]);
+                    nextObjectSet[i] = null;
+                }
+            }
+        }
+
         if (boardCellEmptyObjects == null)
         {
             boardCellEmptyObjects = new GameObject[BoardWidth * AdjBoardHeight];
@@ -107,7 +119,6 @@ public class BoardManager : MonoBehaviour
         }
         else
         {
-            boardCellEmptyObjects = new GameObject[BoardWidth * AdjBoardHeight];
             for (int i = 0; i < boardCellEmptyObjects.Length; i++)
             {
                 boardCellEmptyObjects[i].SetActive(true);

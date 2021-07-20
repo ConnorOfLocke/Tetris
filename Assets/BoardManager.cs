@@ -37,7 +37,11 @@ public class BoardManager : MonoBehaviour
     private RotationState activeShapeRotationState;
     private GameObject[] activeShapeObjectSet;
     private int[] activeShapeObjectIndexs;
-    
+
+    private ShapeType nextObjectShapeType;
+    private GameObject[] nextObjectSet;
+    private int[] nextShapeObjectIndexs;
+
     private float stepTimer = 0.0f;
     private bool isPlaying = true;
 
@@ -46,6 +50,8 @@ public class BoardManager : MonoBehaviour
     private int curLevel => linesCleared / 10;
 
     private List<ShapeType> shapePool = new List<ShapeType>();
+
+    private Vector3 nextShapeOffset = new Vector3(8,0,0);
 
     public long Score => score;
     public long CurLevel => curLevel;
@@ -128,8 +134,21 @@ public class BoardManager : MonoBehaviour
         isPlaying = true;
 
         //Make the first Shape to start moving
-        activeShapeType = ShapeType.I_Shape;// GetNextShape();
-        CreateNewShape(activeShapeType);
+        activeShapeType = GetNextShape();
+        CreateNewShape(activeShapeType, out activeShapeObjectIndexs, out activeShapeObjectSet);
+        activeShapeRotationState = RotationState.Start;
+
+
+        nextObjectShapeType = GetNextShape();
+        CreateNewShape(nextObjectShapeType, out nextShapeObjectIndexs, out nextObjectSet);
+        for (int i = 0; i < 8; i++)
+        {
+            if (nextObjectSet[i] != null)
+                nextObjectSet[i].transform.position += nextShapeOffset;
+        }
+
+        activeShapeRotationState = RotationState.Start;
+        UpdateEmptyCells();
 
     }
 
@@ -171,10 +190,8 @@ public class BoardManager : MonoBehaviour
         return returnShape;
     }
 
-    public bool CreateNewShape(ShapeType _shapeType)
+    public bool CreateNewShape(ShapeType _shapeType, out int[] indexes, out GameObject[] cellObjects)
     {
-        activeShapeType = _shapeType;
-
         int[] dataset = null;
         Material shapeMaterial = null;
         switch (_shapeType)
@@ -210,24 +227,44 @@ public class BoardManager : MonoBehaviour
                 break;
         }
 
-        activeShapeObjectIndexs = new int[8];
+        indexes = new int[8];
 
         int spawnIndex = (20 * BoardWidth) + 3;
-        activeShapeObjectIndexs[0] = dataset[0] == 1 ? spawnIndex + 0 : -1;
-        activeShapeObjectIndexs[1] = dataset[1] == 1 ? spawnIndex + 1 : -1;
-        activeShapeObjectIndexs[2] = dataset[2] == 1 ? spawnIndex + 2 : -1;
-        activeShapeObjectIndexs[3] = dataset[3] == 1 ? spawnIndex + 3 : -1;
-        activeShapeObjectIndexs[4] = dataset[4] == 1 ? spawnIndex + 0 + BoardWidth : -1;
-        activeShapeObjectIndexs[5] = dataset[5] == 1 ? spawnIndex + 1 + BoardWidth : -1;
-        activeShapeObjectIndexs[6] = dataset[6] == 1 ? spawnIndex + 2 + BoardWidth : -1;
-        activeShapeObjectIndexs[7] = dataset[7] == 1 ? spawnIndex + 3 + BoardWidth : -1;
+        indexes[0] = dataset[0] == 1 ? spawnIndex + 0 : -1;
+        indexes[1] = dataset[1] == 1 ? spawnIndex + 1 : -1;
+        indexes[2] = dataset[2] == 1 ? spawnIndex + 2 : -1;
+        indexes[3] = dataset[3] == 1 ? spawnIndex + 3 : -1;
+        indexes[4] = dataset[4] == 1 ? spawnIndex + 0 + BoardWidth : -1;
+        indexes[5] = dataset[5] == 1 ? spawnIndex + 1 + BoardWidth : -1;
+        indexes[6] = dataset[6] == 1 ? spawnIndex + 2 + BoardWidth : -1;
+        indexes[7] = dataset[7] == 1 ? spawnIndex + 3 + BoardWidth : -1;
+
+        GameObject MakeNewCellObject(Vector3 _spawnPoint, int x, int y)
+        {
+            GameObject _returnObject = GameObject.Instantiate(prefabCellObject, _spawnPoint + new Vector3(x, y, 0), Quaternion.identity, prefabCellParent);
+            Renderer _renderer = _returnObject.GetComponent<Renderer>();
+            if (_renderer != null)
+                _renderer.material = shapeMaterial;
+            return _returnObject;
+        }
+
+        cellObjects = new GameObject[8];
+        Vector3 spawnPoint = new Vector3(3, 20, 0);
+        cellObjects[0] = dataset[0] == 1 ? MakeNewCellObject(spawnPoint, 0, 0) : null;
+        cellObjects[1] = dataset[1] == 1 ? MakeNewCellObject(spawnPoint, 1, 0) : null;
+        cellObjects[2] = dataset[2] == 1 ? MakeNewCellObject(spawnPoint, 2, 0) : null;
+        cellObjects[3] = dataset[3] == 1 ? MakeNewCellObject(spawnPoint, 3, 0) : null;
+        cellObjects[4] = dataset[4] == 1 ? MakeNewCellObject(spawnPoint, 0, 1) : null;
+        cellObjects[5] = dataset[5] == 1 ? MakeNewCellObject(spawnPoint, 1, 1) : null;
+        cellObjects[6] = dataset[6] == 1 ? MakeNewCellObject(spawnPoint, 2, 1) : null;
+        cellObjects[7] = dataset[7] == 1 ? MakeNewCellObject(spawnPoint, 3, 1) : null;
 
         //check we can spawn an object there
-        for (int i = 0; i < activeShapeObjectIndexs.Length; i++)
+        for (int i = 0; i < indexes.Length; i++)
         {
-            if (activeShapeObjectIndexs[i] != -1)
+            if (indexes[i] != -1)
             {
-                if (boardCells[activeShapeObjectIndexs[i]].isFilled)
+                if (boardCells[indexes[i]].isFilled)
                 {
                     //Fail state, game over
                     return false;
@@ -235,29 +272,6 @@ public class BoardManager : MonoBehaviour
             }
         }
 
-        GameObject MakeNewCellObject(Vector3 _spawnPoint, int x, int y)
-        {
-            GameObject _returnObject = GameObject.Instantiate(prefabCellObject, _spawnPoint + new Vector3(x,y,0), Quaternion.identity, prefabCellParent);
-            Renderer _renderer = _returnObject.GetComponent<Renderer>();
-            if (_renderer != null)
-                _renderer.material = shapeMaterial;
-            return _returnObject;
-        }
-
-        activeShapeObjectSet = new GameObject[8];
-        Vector3 spawnPoint = new Vector3(3, 20, 0);
-        activeShapeObjectSet[0] = dataset[0] == 1 ? MakeNewCellObject(spawnPoint, 0, 0) : null;
-        activeShapeObjectSet[1] = dataset[1] == 1 ? MakeNewCellObject(spawnPoint, 1, 0) : null;
-        activeShapeObjectSet[2] = dataset[2] == 1 ? MakeNewCellObject(spawnPoint, 2, 0) : null;
-        activeShapeObjectSet[3] = dataset[3] == 1 ? MakeNewCellObject(spawnPoint, 3, 0) : null;
-        activeShapeObjectSet[4] = dataset[4] == 1 ? MakeNewCellObject(spawnPoint, 0, 1) : null;
-        activeShapeObjectSet[5] = dataset[5] == 1 ? MakeNewCellObject(spawnPoint, 1, 1) : null;
-        activeShapeObjectSet[6] = dataset[6] == 1 ? MakeNewCellObject(spawnPoint, 2, 1) : null;
-        activeShapeObjectSet[7] = dataset[7] == 1 ? MakeNewCellObject(spawnPoint, 3, 1) : null;
-
-        activeShapeRotationState = RotationState.Start;
-
-        UpdateEmptyCells();
         return true;
     }
 
@@ -511,16 +525,40 @@ public class BoardManager : MonoBehaviour
             Debug.Log($"Solved {rowsCompleteThisSolve} this round");            
         }
         linesCleared += rowsCompleteThisSolve;
-        
 
-        //Attempt to spawn a new object
-        ShapeType nextShape = GetNextShape();
-        if (!CreateNewShape(nextShape))
+        //Attempt to spawn the saved object 
+        activeShapeObjectIndexs = nextShapeObjectIndexs;
+        activeShapeObjectSet = nextObjectSet;
+        activeShapeRotationState = RotationState.Start;
+        activeShapeType = nextObjectShapeType;
+
+        ShapeType nextShape = nextObjectShapeType;
+        if (!CheckConflicts(activeShapeObjectIndexs))
         {
             //Game Over
             Debug.Log($"GAME Over. Press Escape to start again");
             isPlaying = false;
         }
+        else
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                if (activeShapeObjectSet[i] != null)
+                    activeShapeObjectSet[i].transform.position -= nextShapeOffset;
+            }
+
+            nextObjectShapeType = GetNextShape();
+            CreateNewShape(nextObjectShapeType, out nextShapeObjectIndexs, out nextObjectSet);
+
+            for (int i = 0; i < 8; i++)
+            {
+                if (nextObjectSet[i] != null)
+                    nextObjectSet[i].transform.position += nextShapeOffset;
+            }
+
+            UpdateEmptyCells();
+        }
+
     }
 
     private bool CheckConflicts(int[] _indexs)

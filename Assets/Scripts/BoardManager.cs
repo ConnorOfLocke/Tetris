@@ -27,6 +27,9 @@ public class BoardManager : MonoBehaviour
     private GameOverUI gameOverUI;
 
     [SerializeField]
+    private BoardInput boardInput;
+
+    [SerializeField]
     MaterialSet materialSet;
 
     [SerializeField]
@@ -65,6 +68,7 @@ public class BoardManager : MonoBehaviour
 
         boardCamera.SetupCamera(this);
         boardUI.Initialise(this);
+        boardInput.Initialise(OnInputMove, OnInputRotate, OnInputSlam);
     }
 
     public void ResetBoard()
@@ -294,7 +298,6 @@ public class BoardManager : MonoBehaviour
         if (isPlaying)
         {
             UpdateSteps();
-            UpdateInput();
         }
 
         if (Input.GetKeyDown(KeyCode.Escape))
@@ -318,39 +321,52 @@ public class BoardManager : MonoBehaviour
         }
 
         stepTimer += Time.deltaTime;
+    }   
+
+    public void OnInputMove(Direction direction)
+    {
+        if (!isPlaying)
+            return;
+
+        switch (direction)
+        {
+            case Direction.Left:
+                MoveLeftSimple();
+                break;
+            case Direction.Right:
+                MoveRightSimple();
+                break;
+            case Direction.Up:
+                //nutin
+                break;
+            case Direction.Down:
+                if (!MoveDownSimple())
+                {
+                    PlaceAndCheckState();
+                }
+                break;
+        }
     }
 
-    public void UpdateInput()
+    public void OnInputRotate(bool isLeft)
     {
-        if (Input.GetKeyDown(KeyCode.LeftArrow))
-        {
-            MoveLeftSimple();
-        }
-        else if (Input.GetKeyDown(KeyCode.RightArrow))
-        {
-            MoveRightSimple();
-        }
-        else if (Input.GetKeyDown(KeyCode.DownArrow))
-        {
-            if (!MoveDownSimple())
-            {
-                PlaceAndCheckState();
-            }
-        }
-        else if (Input.GetKeyDown(KeyCode.Space))
-        {
-            while (MoveDownSimple()) {}
+        if (!isPlaying)
+            return;
 
-            PlaceAndCheckState();
-        }
-        else if (Input.GetKeyDown(KeyCode.Q))
-        {
-            RotateLeft();
-        }
-        else if (Input.GetKeyDown(KeyCode.W))
-        {
-            RotateRight();
-        }
+        if (isLeft)        
+            RotateLeft();        
+        else        
+            RotateRight();        
+    }
+
+    public void OnInputSlam()
+    {
+        if (!isPlaying)
+            return;
+
+        while (MoveDownSimple()) { }
+
+        PlaceAndCheckState();
     }
 
     public void MoveLeftSimple()
@@ -2835,6 +2851,14 @@ public enum RotationState
     Left,
     Down,
     Right,
+}
+
+public enum Direction
+{
+    Up,
+    Down,
+    Left,
+    Right
 }
 
 public class ShapeData

@@ -24,6 +24,9 @@ public class BoardManager : MonoBehaviour
     private BoardUI boardUI;
 
     [SerializeField]
+    private GameOverUI gameOverUI;
+
+    [SerializeField]
     MaterialSet materialSet;
 
     [SerializeField]
@@ -546,9 +549,7 @@ public class BoardManager : MonoBehaviour
         ShapeType nextShape = nextObjectShapeType;
         if (!CheckConflicts(activeShapeObjectIndexs))
         {
-            //Game Over
-            Debug.Log($"GAME Over. Press Escape to start again");
-            isPlaying = false;
+            OnGameOver();
         }
         else
         {
@@ -569,7 +570,17 @@ public class BoardManager : MonoBehaviour
 
             UpdateEmptyCells();
         }
+    }
 
+    private void OnGameOver()
+    {
+        //Game Over
+        Debug.Log($"GAME Over. Press Escape to start again");
+        isPlaying = false;
+
+        gameOverUI.InitialiseAndShow(Score, linesCleared, curLevel, () => {
+            ResetBoard();
+        });
     }
 
     private bool CheckConflicts(int[] _indexs)

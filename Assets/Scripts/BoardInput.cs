@@ -9,6 +9,8 @@ public class BoardInput : MonoBehaviour
     private Action<bool> onInputRotate;
     private Action onInputSlam;
 
+    private const float keyPressesPerSecond = 0.05f;
+
     private const float horizontalSwipeScreenPercentage = 0.075f; //in Screen space (swipeRation * ScreenWidth)
     private const float verticalSwipeScreenPercentage = 0.01f; //in Screen space (swipeRation * ScreenWidth)
     private float horizSwipeThreshold => horizontalSwipeScreenPercentage * Screen.width;
@@ -17,6 +19,8 @@ public class BoardInput : MonoBehaviour
     private float tapTimeThreshold = 0.3f; //in seconds
     private float slamSwipeTimeAllowed = 0.2f; //In Seconds
     private float downMovesPerSecond = 32f; //Per Second
+
+    private float keyPressTimer = keyPressesPerSecond;
 
     private DateTime timePressedDown;
     private Vector2 posisitionPressStart;
@@ -38,20 +42,44 @@ public class BoardInput : MonoBehaviour
     public void Update()
     {
 #if UNITY_EDITOR || UNITY_STANDALONE
-        if (Input.GetKeyDown(KeyCode.LeftArrow))
-            onInputMove(Direction.Left);
-        if (Input.GetKeyDown(KeyCode.RightArrow))
-            onInputMove(Direction.Right);
-        if (Input.GetKeyDown(KeyCode.DownArrow))
-            onInputMove(Direction.Down);
+        if (keyPressTimer >= keyPressesPerSecond)
+        {
+            if (Input.GetKey(KeyCode.LeftArrow))
+            {
+                onInputMove(Direction.Left);
+                keyPressTimer = 0;
+            }
+            if (Input.GetKey(KeyCode.RightArrow))
+            {
+                onInputMove(Direction.Right);
+                keyPressTimer = 0;
 
-        if (Input.GetKeyDown(KeyCode.Q))
-            onInputRotate(true);
-        if (Input.GetKeyDown(KeyCode.W))
-            onInputRotate(false);
+            }
+            if (Input.GetKey(KeyCode.DownArrow))
+            {
+                onInputMove(Direction.Down);
+            }
 
-        if (Input.GetKeyDown(KeyCode.Space))
-            onInputSlam();
+            if (Input.GetKey(KeyCode.Q))
+            {
+                onInputRotate(true);
+                keyPressTimer = 0;
+            }
+            if (Input.GetKey(KeyCode.W))
+            {
+                onInputRotate(false);
+                keyPressTimer = 0;
+            }
+
+            if (Input.GetKeyDown(KeyCode.Space))
+                onInputSlam();
+        }
+        else
+        {
+            keyPressTimer += Time.deltaTime;
+        }
+
+
 #endif
 
 #if UNITY_ANDROID || UNITY_IOS

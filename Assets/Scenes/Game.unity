@@ -266,7 +266,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   prefabCellParent: {fileID: 306170492}
-  prefabCellObject: {fileID: 5700506993600546929, guid: ed4aecebae8e3914cb2f98e3a009c93c,
+  prefabCellObject: {fileID: -7712940348649113738, guid: ed4aecebae8e3914cb2f98e3a009c93c,
     type: 3}
   prefabEmptyCellObject: {fileID: 7868043131751683455, guid: 45bfb6bb7e8a5804a9895cb620ddcfbe,
     type: 3}

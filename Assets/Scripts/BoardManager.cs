@@ -6,7 +6,8 @@ using UnityEngine;
 public class BoardManager : MonoBehaviour
 {
     public const int BoardWidth = 10;
-    public const int BoardHeight = 20;    
+    public const int BoardHeight = 20;
+    public const float LineClearPause = 1.0f;
     public static int AdjBoardHeight => BoardHeight + 2;
     public static int StartingLevel = 0;
 
@@ -14,7 +15,7 @@ public class BoardManager : MonoBehaviour
     private Transform prefabCellParent = null;
 
     [SerializeField]
-    private GameObject prefabCellObject = null;
+    private BoardCell prefabCellObject = null;
     [SerializeField]
     private GameObject prefabEmptyCellObject = null;
 
@@ -36,20 +37,21 @@ public class BoardManager : MonoBehaviour
     [SerializeField]
     LevelInfo levelInfo;
 
-    private BoardCell[] boardCells = null;
-    private GameObject[] boardCellObjects = null;
+    private BoardCellInfo[] boardCells = null;
+    private BoardCell[] boardCellObjects = null;
     private GameObject[] boardCellEmptyObjects = null;
 
     private ShapeType activeShapeType;
     private RotationState activeShapeRotationState;
-    private GameObject[] activeShapeObjectSet;
+    private BoardCell[] activeShapeObjectSet;
     private int[] activeShapeObjectIndexs;
 
     private ShapeType nextObjectShapeType;
-    private GameObject[] nextObjectSet;
+    private BoardCell[] nextObjectSet;
     private int[] nextShapeObjectIndexs;
 
     private float stepTimer = 0.0f;
+    private float lineClearPause = 0.0f;
     private bool isPlaying = true;
 
     private long score = 0;
@@ -62,9 +64,7 @@ public class BoardManager : MonoBehaviour
 
     public long Score => score;
     public long CurLevel => curLevel;
-    
-    
-
+       
     public void Start()
     {
         ResetBoard();
@@ -86,7 +86,7 @@ public class BoardManager : MonoBehaviour
             {
                 if (boardCellObjects[i] != null)
                 {
-                    Destroy(boardCellObjects[i]);
+                    Destroy(boardCellObjects[i].gameObject);
                     boardCellObjects[i] = null;
                 }
             }
@@ -98,7 +98,7 @@ public class BoardManager : MonoBehaviour
             {
                 if (activeShapeObjectSet[i] != null)
                 {
-                    Destroy(activeShapeObjectSet[i]);
+                    Destroy(activeShapeObjectSet[i].gameObject);
                     activeShapeObjectSet[i] = null;
                 }
             }
@@ -110,7 +110,7 @@ public class BoardManager : MonoBehaviour
             {
                 if (nextObjectSet[i] != null)
                 {
-                    Destroy(nextObjectSet[i]);
+                    Destroy(nextObjectSet[i].gameObject);
                     nextObjectSet[i] = null;
                 }
             }
@@ -136,12 +136,12 @@ public class BoardManager : MonoBehaviour
         }
 
         //Make the board
-        boardCells = new BoardCell[BoardWidth * AdjBoardHeight];
-        boardCellObjects = new GameObject[BoardHeight * AdjBoardHeight];
+        boardCells = new BoardCellInfo[BoardWidth * AdjBoardHeight];
+        boardCellObjects = new BoardCell[BoardHeight * AdjBoardHeight];
 
         for (int cellIndex = 0; cellIndex < BoardWidth * AdjBoardHeight; cellIndex++)
         {
-            boardCells[cellIndex] = new BoardCell(cellIndex);
+            boardCells[cellIndex] = new BoardCellInfo(cellIndex);
         }
 
         //fill bottom row
@@ -211,7 +211,7 @@ public class BoardManager : MonoBehaviour
         return returnShape;
     }
 
-    public bool CreateNewShape(ShapeType _shapeType, out int[] indexes, out GameObject[] cellObjects)
+    public bool CreateNewShape(ShapeType _shapeType, out int[] indexes, out BoardCell[] cellObjects)
     {
         int[] dataset = null;
         Material shapeMaterial = null;
@@ -260,16 +260,16 @@ public class BoardManager : MonoBehaviour
         indexes[6] = dataset[6] == 1 ? spawnIndex + 2 + BoardWidth : -1;
         indexes[7] = dataset[7] == 1 ? spawnIndex + 3 + BoardWidth : -1;
 
-        GameObject MakeNewCellObject(Vector3 _spawnPoint, int x, int y)
+        BoardCell MakeNewCellObject(Vector3 _spawnPoint, int x, int y)
         {
-            GameObject _returnObject = GameObject.Instantiate(prefabCellObject, _spawnPoint + new Vector3(x, y, 0), Quaternion.identity, prefabCellParent);
+            BoardCell _returnObject = Instantiate(prefabCellObject, _spawnPoint + new Vector3(x, y, 0), Quaternion.identity, prefabCellParent);
             Renderer _renderer = _returnObject.GetComponent<Renderer>();
             if (_renderer != null)
                 _renderer.material = shapeMaterial;
             return _returnObject;
         }
 
-        cellObjects = new GameObject[8];
+        cellObjects = new BoardCell[8];
         Vector3 spawnPoint = new Vector3(3, 20, 0);
         cellObjects[0] = dataset[0] == 1 ? MakeNewCellObject(spawnPoint, 0, 0) : null;
         cellObjects[1] = dataset[1] == 1 ? MakeNewCellObject(spawnPoint, 1, 0) : null;
@@ -312,25 +312,32 @@ public class BoardManager : MonoBehaviour
 
     public void UpdateSteps()
     {
-        float stepsPerMinute = 60.0f / levelInfo.GetStepsPerLevel(curLevel);
-
-         if (stepTimer > 1.0f / stepsPerMinute)
+        if (lineClearPause > 0)
         {
-            stepTimer -= 1.0f / stepsPerMinute;
-
-            //if we can't move down, place and solve
-            if (!MoveDownSimple())
-            {
-                PlaceAndCheckState();
-            }
+            lineClearPause -= Time.deltaTime;
         }
+        else
+        {
+            float stepsPerMinute = 60.0f / levelInfo.GetStepsPerLevel(curLevel);
 
-        stepTimer += Time.deltaTime;
+            if (stepTimer > 1.0f / stepsPerMinute)
+            {
+                stepTimer -= 1.0f / stepsPerMinute;
+
+                //if we can't move down, place and solve
+                if (!MoveDownSimple())
+                {
+                    PlaceAndCheckState();
+                }
+            }
+
+            stepTimer += Time.deltaTime;
+        }
     }   
 
     public void OnInputMove(Direction direction)
     {
-        if (!isPlaying)
+        if (!isPlaying || lineClearPause > 0)
             return;
 
         switch (direction)
@@ -523,7 +530,9 @@ public class BoardManager : MonoBehaviour
                 for (int colIndex = 0; colIndex < BoardWidth; colIndex++)
                 {
                     boardCells[rowIndex * BoardWidth + colIndex].isFilled = false;
-                    Destroy(boardCellObjects[rowIndex * BoardWidth + colIndex]);
+                    //Destroy(boardCellObjects[rowIndex * BoardWidth + colIndex]);
+                    boardCellObjects[rowIndex * BoardWidth + colIndex].FireDestroyAnim();
+                    boardCellObjects[rowIndex * BoardWidth + colIndex].DestroyAfterDelay(LineClearPause);
                     boardCellObjects[rowIndex * BoardWidth + colIndex] = null;
                 }
 
@@ -536,7 +545,9 @@ public class BoardManager : MonoBehaviour
 
                     boardCellObjects[belowIndex] = boardCellObjects[index];
                     if (boardCellObjects[belowIndex] != null)
-                        boardCellObjects[belowIndex].transform.position += Vector3.down;
+                    {
+                        boardCellObjects[belowIndex].AddPositionAfterDelay(Vector3.down, LineClearPause);
+                    }
                 }
 
                 //move back since we cleared a row
@@ -557,7 +568,8 @@ public class BoardManager : MonoBehaviour
                 case 4:
                     score += 1200 * (curLevel + 1); break;
             }
-            Debug.Log($"Solved {rowsCompleteThisSolve} this round");            
+            Debug.Log($"Solved {rowsCompleteThisSolve} this round");
+            lineClearPause = LineClearPause;
         }
         linesCleared += rowsCompleteThisSolve;
 
@@ -1140,7 +1152,7 @@ public class BoardManager : MonoBehaviour
             case ShapeType.O_Shape:
                 //Cube dont rotate silly
                 return true;
-                break;
+                //break;
             case ShapeType.I_Shape:
                 {
                     if (activeShapeRotationState == RotationState.Start)
@@ -2813,12 +2825,12 @@ public class BoardManager : MonoBehaviour
         }
     }
     
-    public struct BoardCell
+    public struct BoardCellInfo
     {
         public int cellIndex;
         public bool isFilled;
         
-        public BoardCell(int _cellIndex)
+        public BoardCellInfo(int _cellIndex)
         {
             cellIndex = _cellIndex;
             isFilled = false;

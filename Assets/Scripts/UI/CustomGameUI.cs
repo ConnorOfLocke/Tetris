@@ -11,7 +11,7 @@ public class CustomGameUI : UIPanel
     private Text levelSliderText;
 
     private int selectedLevel = 0;
-    private const int maxSelectedLevel = 50;
+    private const int maxSelectedLevel = 29;
 
     public override void OnShow()
     {

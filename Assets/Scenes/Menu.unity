@@ -444,12 +444,12 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1085218437}
-        m_MethodName: 
+      - m_Target: {fileID: 1085218439}
+        m_MethodName: OnLevelSliderChanged
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
@@ -1860,7 +1860,7 @@ GameObject:
   - component: {fileID: 1899885495}
   - component: {fileID: 1899885494}
   m_Layer: 5
-  m_Name: TitleTextText (1)
+  m_Name: LevelText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

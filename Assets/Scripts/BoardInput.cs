@@ -58,17 +58,16 @@ public class BoardInput : MonoBehaviour
             if (Input.GetKey(KeyCode.DownArrow))
             {
                 onInputMove(Direction.Down);
+                keyPressTimer = 0;
             }
 
-            if (Input.GetKey(KeyCode.Q))
+            if (Input.GetKeyDown(KeyCode.Q))
             {
                 onInputRotate(true);
-                keyPressTimer = 0;
             }
-            if (Input.GetKey(KeyCode.W))
+            if (Input.GetKeyDown(KeyCode.W))
             {
                 onInputRotate(false);
-                keyPressTimer = 0;
             }
 
             if (Input.GetKeyDown(KeyCode.Space))

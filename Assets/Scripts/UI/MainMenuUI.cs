@@ -21,7 +21,7 @@ public class MainMenuUI : UIPanel
 
     public void OnQuickGameButton()
     {
-        
+        SceneLoader.Instance.LoadScene(SceneLoader.GameScene);
     }
 
 }

@@ -31,7 +31,9 @@ public class CustomGameUI : UIPanel
 
     public void OnStartGamePressed()
     {
+        BoardManager.StartingLevel = selectedLevel;
 
+        SceneLoader.Instance.LoadScene(SceneLoader.GameScene);
     }
 
     public void OnBackButtonPressed()

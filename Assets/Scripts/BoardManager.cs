@@ -8,6 +8,7 @@ public class BoardManager : MonoBehaviour
     public const int BoardWidth = 10;
     public const int BoardHeight = 20;    
     public static int AdjBoardHeight => BoardHeight + 2;
+    public static int StartingLevel = 0;
 
     [SerializeField]
     private Transform prefabCellParent = null;
@@ -53,7 +54,7 @@ public class BoardManager : MonoBehaviour
 
     private long score = 0;
     private int linesCleared = 0;
-    private int curLevel => linesCleared / 10;
+    private int curLevel => StartingLevel + linesCleared / 10;
 
     private List<ShapeType> shapePool = new List<ShapeType>();
 
@@ -61,6 +62,8 @@ public class BoardManager : MonoBehaviour
 
     public long Score => score;
     public long CurLevel => curLevel;
+    
+    
 
     public void Start()
     {
@@ -309,9 +312,11 @@ public class BoardManager : MonoBehaviour
 
     public void UpdateSteps()
     {
-        if (stepTimer > 60.0f / levelInfo.GetStepsPerLevel(curLevel))
+        float stepsPerMinute = 60.0f / levelInfo.GetStepsPerLevel(curLevel);
+
+         if (stepTimer > 1.0f / stepsPerMinute)
         {
-            stepTimer -= 60.0f / levelInfo.GetStepsPerLevel(curLevel);
+            stepTimer -= 1.0f / stepsPerMinute;
 
             //if we can't move down, place and solve
             if (!MoveDownSimple())

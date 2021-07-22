@@ -5,8 +5,10 @@ using UnityEngine;
 public class BoardCamera : MonoBehaviour
 {
     [SerializeField]
-    public Camera boardCamera;
-    public GameObject backgroundQuad;
+    private Camera boardCamera;
+
+    [SerializeField]
+    private GameObject backgroundQuad;
 
     public void SetupCamera(BoardManager _boardManager)
     {

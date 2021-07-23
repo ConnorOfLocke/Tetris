@@ -478,7 +478,7 @@ MonoBehaviour:
     type: 3}
   prefabEmptyCellObject: {fileID: 7868043131751683455, guid: 45bfb6bb7e8a5804a9895cb620ddcfbe,
     type: 3}
-  prefabLookAheadCellObject: {fileID: 5700506993600546929, guid: 30d47f144f6678647b2f9325acdd448f,
+  prefabShadowObject: {fileID: 5700506993600546929, guid: 30d47f144f6678647b2f9325acdd448f,
     type: 3}
   boardCamera: {fileID: 963194229}
   boardUI: {fileID: 1461610603}

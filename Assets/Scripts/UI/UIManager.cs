@@ -15,9 +15,14 @@ public class UIManager : MonoBehaviour
     public void Start()
     {
         curState = MenuState.MainMenu;
-
+       
         mainMenuUI.uiManager = this;
         customGameUI.uiManager = this;
+
+        mainMenuUI.gameObject.SetActive(true);
+        customGameUI.gameObject.SetActive(false);
+
+        mainMenuUI.OnShow();
     }
 
     public void SwapToUI(MenuState _menuState)

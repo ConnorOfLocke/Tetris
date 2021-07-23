@@ -11,6 +11,7 @@ public class BoardManager : MonoBehaviour
     public static int AdjBoardHeight => BoardHeight + 2;
     public static int StartingLevel = 0;
     public static int LookAheadSteps = 3;
+    public static bool ShowShapeShadow = true;
 
     [SerializeField]
     private Transform prefabCellParent = null;
@@ -20,7 +21,7 @@ public class BoardManager : MonoBehaviour
     [SerializeField]
     private GameObject prefabEmptyCellObject = null;
     [SerializeField]
-    private GameObject prefabLookAheadCellObject = null;
+    private GameObject prefabShadowObject = null;
 
     [SerializeField]
     private BoardCamera boardCamera;
@@ -43,7 +44,7 @@ public class BoardManager : MonoBehaviour
     private BoardCellInfo[] boardCells = null;
     private BoardCell[] boardCellObjects = null;
     private GameObject[] boardCellEmptyObjects = null;
-    private GameObject[] lookAheadObjects = null;
+    private GameObject[] shadowObjects = null;
 
     private ShapeType activeShapeType;
     private RotationState activeShapeRotationState;
@@ -151,12 +152,12 @@ public class BoardManager : MonoBehaviour
         }
 
         //Create look aheads
-        if (lookAheadObjects == null)
+        if (shadowObjects == null)
         {
-            lookAheadObjects = new GameObject[8];
+            shadowObjects = new GameObject[8];
             for (int i = 0; i < 8; i++)
             {
-                lookAheadObjects[i] = Instantiate(prefabLookAheadCellObject, prefabCellParent);
+                shadowObjects[i] = Instantiate(prefabShadowObject, prefabCellParent);
             }
         }
 
@@ -201,7 +202,7 @@ public class BoardManager : MonoBehaviour
         }
 
         UpdateEmptyCells();
-        UpdateLookAhead();
+        UpdateShadow();
     }
 
     public void UpdateEmptyCells()
@@ -327,7 +328,7 @@ public class BoardManager : MonoBehaviour
         return true;
     }
 
-    public void UpdateLookAhead()
+    public void UpdateShadow()
     {
         int movesDownAllowed = 0;
 
@@ -341,15 +342,15 @@ public class BoardManager : MonoBehaviour
 
         for (int i = 0; i < 8; i++)
         {
-            if (activeShapeObjectIndexs[i] >= 0 && movesDownAllowed > 0 && lineClearPause <= 0)
+            if (activeShapeObjectIndexs[i] >= 0 && movesDownAllowed > 0 && lineClearPause <= 0 && ShowShapeShadow)
             {
-                lookAheadObjects[i].SetActive(true);
-                lookAheadObjects[i].transform.position = activeShapeObjectSet[i].transform.position;
-                lookAheadObjects[i].transform.position += Vector3.down * movesDownAllowed;
+                shadowObjects[i].SetActive(true);
+                shadowObjects[i].transform.position = activeShapeObjectSet[i].transform.position;
+                shadowObjects[i].transform.position += Vector3.down * movesDownAllowed;
             }
             else
             {
-                lookAheadObjects[i].SetActive(false);
+                shadowObjects[i].SetActive(false);
             }
         }
     }
@@ -477,7 +478,7 @@ public class BoardManager : MonoBehaviour
             }
 
             UpdateEmptyCells();
-            UpdateLookAhead();
+            UpdateShadow();
         }
     }
 
@@ -514,7 +515,7 @@ public class BoardManager : MonoBehaviour
             }
 
             UpdateEmptyCells();
-            UpdateLookAhead();
+            UpdateShadow();
         }
     }
 
@@ -552,7 +553,7 @@ public class BoardManager : MonoBehaviour
             }
 
             UpdateEmptyCells();
-            UpdateLookAhead();
+            UpdateShadow();
         }
 
         return validMove;
@@ -636,51 +637,61 @@ public class BoardManager : MonoBehaviour
         linesCleared += rowsCompleteThisSolve;
 
         //Attempt to spawn the saved object 
+        if (LookAheadSteps == 0)
+        {
+            activeShapeType = GetNextShape();
+            CreateNewShape(activeShapeType, out activeShapeObjectIndexs, out activeShapeObjectSet);
+            activeShapeRotationState = RotationState.Start;
+        }
+        else
+        {
+            activeShapeObjectIndexs = nextShapes[0].nextShapeObjectIndexs;
+            activeShapeObjectSet = nextShapes[0].nextObjectSet;
+            activeShapeRotationState = RotationState.Start;
+            activeShapeType = nextShapes[0].nextObjectShapeType;
+        }
 
-        activeShapeObjectIndexs = nextShapes[0].nextShapeObjectIndexs;
-        activeShapeObjectSet = nextShapes[0].nextObjectSet;
-        activeShapeRotationState = RotationState.Start;
-        activeShapeType = nextShapes[0].nextObjectShapeType;
-
-        ShapeType nextShape = nextShapes[0].nextObjectShapeType;
         if (!CheckConflicts(activeShapeObjectIndexs))
         {
             OnGameOver();
         }
         else
         {
-            //move the objects to the spawn point
-            for (int i = 0; i < 8; i++)
+            if (LookAheadSteps > 0)
             {
-                if (activeShapeObjectSet[i] != null)
-                    activeShapeObjectSet[i].transform.position -= nextShapeOffset;
-            }
-
-            //shuffle them forward
-            for (int shapeIndex = 1; shapeIndex < nextShapes.Length; shapeIndex++)
-            {
+                //move the objects to the spawn point
                 for (int i = 0; i < 8; i++)
                 {
-                    if (nextShapes[shapeIndex].nextObjectSet[i] != null)
-                        nextShapes[shapeIndex].nextObjectSet[i].transform.position -= nextShapeVertOffset;
+                    if (activeShapeObjectSet[i] != null)
+                        activeShapeObjectSet[i].transform.position -= nextShapeOffset;
                 }
 
-                nextShapes[shapeIndex - 1] = nextShapes[shapeIndex];
-            }
+                //shuffle them forward
+                for (int shapeIndex = 1; shapeIndex < nextShapes.Length; shapeIndex++)
+                {
+                    for (int i = 0; i < 8; i++)
+                    {
+                        if (nextShapes[shapeIndex].nextObjectSet[i] != null)
+                            nextShapes[shapeIndex].nextObjectSet[i].transform.position -= nextShapeVertOffset;
+                    }
 
-            nextShapes[nextShapes.Length - 1].nextObjectShapeType = GetNextShape();
-            CreateNewShape(nextShapes[nextShapes.Length - 1].nextObjectShapeType,
-                            out nextShapes[nextShapes.Length - 1].nextShapeObjectIndexs,
-                            out nextShapes[nextShapes.Length - 1].nextObjectSet);
+                    nextShapes[shapeIndex - 1] = nextShapes[shapeIndex];
+                }
 
-            for (int i = 0; i < 8; i++)
-            {
-                if (nextShapes[nextShapes.Length - 1].nextObjectSet[i] != null)
-                    nextShapes[nextShapes.Length - 1].nextObjectSet[i].transform.position += nextShapeOffset + nextShapeVertOffset * (nextShapes.Length -1);
+                nextShapes[nextShapes.Length - 1].nextObjectShapeType = GetNextShape();
+                CreateNewShape(nextShapes[nextShapes.Length - 1].nextObjectShapeType,
+                                out nextShapes[nextShapes.Length - 1].nextShapeObjectIndexs,
+                                out nextShapes[nextShapes.Length - 1].nextObjectSet);
+
+                for (int i = 0; i < 8; i++)
+                {
+                    if (nextShapes[nextShapes.Length - 1].nextObjectSet[i] != null)
+                        nextShapes[nextShapes.Length - 1].nextObjectSet[i].transform.position += nextShapeOffset + nextShapeVertOffset * (nextShapes.Length - 1);
+                }
             }
 
             UpdateEmptyCells();
-            UpdateLookAhead();
+            UpdateShadow();
         }
     }
 
@@ -735,7 +746,7 @@ public class BoardManager : MonoBehaviour
                     activeShapeObjectSet[i].transform.position += newStateOffsets[i];
             }
             UpdateEmptyCells();
-            UpdateLookAhead();
+            UpdateShadow();
         }
        
 
@@ -767,7 +778,7 @@ public class BoardManager : MonoBehaviour
             }
 
             UpdateEmptyCells();
-            UpdateLookAhead();
+            UpdateShadow();
         }
 
         return validTurn;

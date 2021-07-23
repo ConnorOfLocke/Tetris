@@ -10,6 +10,7 @@ public class BoardManager : MonoBehaviour
     public const float LineClearPause = 1.0f;
     public static int AdjBoardHeight => BoardHeight + 2;
     public static int StartingLevel = 0;
+    public static int LookAheadSteps = 3;
 
     [SerializeField]
     private Transform prefabCellParent = null;
@@ -42,18 +43,21 @@ public class BoardManager : MonoBehaviour
     private BoardCellInfo[] boardCells = null;
     private BoardCell[] boardCellObjects = null;
     private GameObject[] boardCellEmptyObjects = null;
+    private GameObject[] lookAheadObjects = null;
 
     private ShapeType activeShapeType;
     private RotationState activeShapeRotationState;
     private BoardCell[] activeShapeObjectSet = null;
     private int[] activeShapeObjectIndexs = null;
-    private GameObject[] lookAheadObjects = null;
 
+    private NextShape[] nextShapes = null;
 
-    private ShapeType nextObjectShapeType;
-    private BoardCell[] nextObjectSet = null;
-    private int[] nextShapeObjectIndexs = null;
-
+    struct NextShape
+    {
+        public ShapeType nextObjectShapeType;
+        public BoardCell[] nextObjectSet;
+        public int[] nextShapeObjectIndexs;
+    }
 
     private float stepTimer = 0.0f;
     private float lineClearPause = 0.0f;
@@ -66,6 +70,7 @@ public class BoardManager : MonoBehaviour
     private List<ShapeType> shapePool = new List<ShapeType>();
 
     private Vector3 nextShapeOffset = new Vector3(8,0,0);
+    private Vector3 nextShapeVertOffset = new Vector3(0, -4, 0);
 
     public long Score => score;
     public long CurLevel => curLevel;
@@ -109,16 +114,20 @@ public class BoardManager : MonoBehaviour
             }
         }
 
-        if (nextObjectSet != null)
+        if (nextShapes != null)
         {
-            for (int i = 0; i < nextObjectSet.Length; i++)
+            for (int shapeIndex = 0; shapeIndex < LookAheadSteps; shapeIndex++)
             {
-                if (nextObjectSet[i] != null)
+                for (int i = 0; i < nextShapes[shapeIndex].nextObjectSet.Length; i++)
                 {
-                    Destroy(nextObjectSet[i].gameObject);
-                    nextObjectSet[i] = null;
+                    if (nextShapes[shapeIndex].nextObjectSet[i] != null)
+                    {
+                        Destroy(nextShapes[shapeIndex].nextObjectSet[i].gameObject);
+                        nextShapes[shapeIndex].nextObjectSet[i] = null;
+                    }
                 }
             }
+
         }
 
         //Create empty cells if they have not been already
@@ -177,13 +186,18 @@ public class BoardManager : MonoBehaviour
         CreateNewShape(activeShapeType, out activeShapeObjectIndexs, out activeShapeObjectSet);
         activeShapeRotationState = RotationState.Start;
 
-        //Make the next shape ready for action
-        nextObjectShapeType = GetNextShape();
-        CreateNewShape(nextObjectShapeType, out nextShapeObjectIndexs, out nextObjectSet);
-        for (int i = 0; i < 8; i++)
+        //Make the next shapes ready for action
+        nextShapes = new NextShape[LookAheadSteps];
+
+        for (int shapeIndex = 0; shapeIndex < nextShapes.Length; shapeIndex++)
         {
-            if (nextObjectSet[i] != null)
-                nextObjectSet[i].transform.position += nextShapeOffset;
+            nextShapes[shapeIndex].nextObjectShapeType = GetNextShape();
+            CreateNewShape(nextShapes[shapeIndex].nextObjectShapeType, out nextShapes[shapeIndex].nextShapeObjectIndexs, out nextShapes[shapeIndex].nextObjectSet);
+            for (int i = 0; i < 8; i++)
+            {
+                if (nextShapes[shapeIndex].nextObjectSet[i] != null)
+                    nextShapes[shapeIndex].nextObjectSet[i].transform.position += nextShapeOffset + nextShapeVertOffset * shapeIndex;
+            }
         }
 
         UpdateEmptyCells();
@@ -622,31 +636,47 @@ public class BoardManager : MonoBehaviour
         linesCleared += rowsCompleteThisSolve;
 
         //Attempt to spawn the saved object 
-        activeShapeObjectIndexs = nextShapeObjectIndexs;
-        activeShapeObjectSet = nextObjectSet;
-        activeShapeRotationState = RotationState.Start;
-        activeShapeType = nextObjectShapeType;
 
-        ShapeType nextShape = nextObjectShapeType;
+        activeShapeObjectIndexs = nextShapes[0].nextShapeObjectIndexs;
+        activeShapeObjectSet = nextShapes[0].nextObjectSet;
+        activeShapeRotationState = RotationState.Start;
+        activeShapeType = nextShapes[0].nextObjectShapeType;
+
+        ShapeType nextShape = nextShapes[0].nextObjectShapeType;
         if (!CheckConflicts(activeShapeObjectIndexs))
         {
             OnGameOver();
         }
         else
         {
+            //move the objects to the spawn point
             for (int i = 0; i < 8; i++)
             {
                 if (activeShapeObjectSet[i] != null)
                     activeShapeObjectSet[i].transform.position -= nextShapeOffset;
             }
 
-            nextObjectShapeType = GetNextShape();
-            CreateNewShape(nextObjectShapeType, out nextShapeObjectIndexs, out nextObjectSet);
+            //shuffle them forward
+            for (int shapeIndex = 1; shapeIndex < nextShapes.Length; shapeIndex++)
+            {
+                for (int i = 0; i < 8; i++)
+                {
+                    if (nextShapes[shapeIndex].nextObjectSet[i] != null)
+                        nextShapes[shapeIndex].nextObjectSet[i].transform.position -= nextShapeVertOffset;
+                }
+
+                nextShapes[shapeIndex - 1] = nextShapes[shapeIndex];
+            }
+
+            nextShapes[nextShapes.Length - 1].nextObjectShapeType = GetNextShape();
+            CreateNewShape(nextShapes[nextShapes.Length - 1].nextObjectShapeType,
+                            out nextShapes[nextShapes.Length - 1].nextShapeObjectIndexs,
+                            out nextShapes[nextShapes.Length - 1].nextObjectSet);
 
             for (int i = 0; i < 8; i++)
             {
-                if (nextObjectSet[i] != null)
-                    nextObjectSet[i].transform.position += nextShapeOffset;
+                if (nextShapes[nextShapes.Length - 1].nextObjectSet[i] != null)
+                    nextShapes[nextShapes.Length - 1].nextObjectSet[i].transform.position += nextShapeOffset + nextShapeVertOffset * (nextShapes.Length -1);
             }
 
             UpdateEmptyCells();

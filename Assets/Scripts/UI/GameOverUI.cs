@@ -14,10 +14,10 @@ public class GameOverUI : MonoBehaviour
 
     [SerializeField]
     Text scoreText;
-    
+
     [SerializeField]
     Text linesClearedText;
-    
+
     [SerializeField]
     Text levelReachedText;
 
@@ -45,6 +45,11 @@ public class GameOverUI : MonoBehaviour
 
         if (onRestartCallback != null)
             onRestartCallback.Invoke();
+    }
+
+    public void OnMainMenuButtonPressed()
+    {
+        SceneLoader.Instance.LoadScene(SceneLoader.MenuScene);
     }
 
     string[] GameOverLines = new string[]{

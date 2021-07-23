@@ -53,8 +53,10 @@ public class SceneLoader : MonoBehaviour
         var activeSceneDown = SceneManager.UnloadSceneAsync(activeScene);
         yield return activeSceneDown;
 
+        yield return new WaitForSeconds(1.0f);
+
         //Load scene ya want 
-        var newSceneUp = SceneManager.LoadSceneAsync(sceneName);
+        var newSceneUp = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
         yield return newSceneUp;
 
         //Unload Loading scene

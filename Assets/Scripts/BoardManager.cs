@@ -45,14 +45,14 @@ public class BoardManager : MonoBehaviour
 
     private ShapeType activeShapeType;
     private RotationState activeShapeRotationState;
-    private BoardCell[] activeShapeObjectSet;
-    private int[] activeShapeObjectIndexs;
-    private GameObject[] lookAheadObjects;
+    private BoardCell[] activeShapeObjectSet = null;
+    private int[] activeShapeObjectIndexs = null;
+    private GameObject[] lookAheadObjects = null;
 
 
     private ShapeType nextObjectShapeType;
-    private BoardCell[] nextObjectSet;
-    private int[] nextShapeObjectIndexs;
+    private BoardCell[] nextObjectSet = null;
+    private int[] nextShapeObjectIndexs = null;
 
 
     private float stepTimer = 0.0f;
@@ -147,7 +147,7 @@ public class BoardManager : MonoBehaviour
             lookAheadObjects = new GameObject[8];
             for (int i = 0; i < 8; i++)
             {
-                lookAheadObjects[i] = Instantiate(prefabLookAheadCellObject);
+                lookAheadObjects[i] = Instantiate(prefabLookAheadCellObject, prefabCellParent);
             }
         }
 

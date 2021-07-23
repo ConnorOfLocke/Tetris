@@ -18,6 +18,8 @@ public class BoardManager : MonoBehaviour
     private BoardCell prefabCellObject = null;
     [SerializeField]
     private GameObject prefabEmptyCellObject = null;
+    [SerializeField]
+    private GameObject prefabLookAheadCellObject = null;
 
     [SerializeField]
     private BoardCamera boardCamera;
@@ -45,10 +47,13 @@ public class BoardManager : MonoBehaviour
     private RotationState activeShapeRotationState;
     private BoardCell[] activeShapeObjectSet;
     private int[] activeShapeObjectIndexs;
+    private GameObject[] lookAheadObjects;
+
 
     private ShapeType nextObjectShapeType;
     private BoardCell[] nextObjectSet;
     private int[] nextShapeObjectIndexs;
+
 
     private float stepTimer = 0.0f;
     private float lineClearPause = 0.0f;
@@ -79,7 +84,7 @@ public class BoardManager : MonoBehaviour
         score = 0;
         linesCleared = 0;
 
-        //clear out the old board objects
+        //clear out the old board objects, active shapes and next objects
         if (boardCellObjects != null)
         {
             for (int i = 0; i < boardCellObjects.Length; i++)
@@ -116,6 +121,7 @@ public class BoardManager : MonoBehaviour
             }
         }
 
+        //Create empty cells if they have not been already
         if (boardCellEmptyObjects == null)
         {
             boardCellEmptyObjects = new GameObject[BoardWidth * AdjBoardHeight];
@@ -135,6 +141,16 @@ public class BoardManager : MonoBehaviour
             }
         }
 
+        //Create look aheads
+        if (lookAheadObjects == null)
+        {
+            lookAheadObjects = new GameObject[8];
+            for (int i = 0; i < 8; i++)
+            {
+                lookAheadObjects[i] = Instantiate(prefabLookAheadCellObject);
+            }
+        }
+
         //Make the board
         boardCells = new BoardCellInfo[BoardWidth * AdjBoardHeight];
         boardCellObjects = new BoardCell[BoardHeight * AdjBoardHeight];
@@ -144,6 +160,7 @@ public class BoardManager : MonoBehaviour
             boardCells[cellIndex] = new BoardCellInfo(cellIndex);
         }
 
+        
         //fill bottom row
         //for (int i = 0; i < BoardWidth - 3; i++)
         //{
@@ -154,12 +171,13 @@ public class BoardManager : MonoBehaviour
         stepTimer = 0;
         isPlaying = true;
 
+
         //Make the first Shape to start moving
         activeShapeType = GetNextShape();
         CreateNewShape(activeShapeType, out activeShapeObjectIndexs, out activeShapeObjectSet);
         activeShapeRotationState = RotationState.Start;
 
-
+        //Make the next shape ready for action
         nextObjectShapeType = GetNextShape();
         CreateNewShape(nextObjectShapeType, out nextShapeObjectIndexs, out nextObjectSet);
         for (int i = 0; i < 8; i++)
@@ -168,9 +186,8 @@ public class BoardManager : MonoBehaviour
                 nextObjectSet[i].transform.position += nextShapeOffset;
         }
 
-        activeShapeRotationState = RotationState.Start;
         UpdateEmptyCells();
-
+        UpdateLookAhead();
     }
 
     public void UpdateEmptyCells()
@@ -296,6 +313,34 @@ public class BoardManager : MonoBehaviour
         return true;
     }
 
+    public void UpdateLookAhead()
+    {
+        int movesDownAllowed = 0;
+
+        int[] checkState = new int[8];
+        CopyState(ref checkState, activeShapeObjectIndexs);
+
+        while (MoveDown(ref checkState) && CheckConflicts(checkState))
+        {
+            movesDownAllowed++;
+        }
+
+        for (int i = 0; i < 8; i++)
+        {
+            if (activeShapeObjectIndexs[i] >= 0 && movesDownAllowed > 0 && lineClearPause <= 0)
+            {
+                lookAheadObjects[i].SetActive(true);
+                lookAheadObjects[i].transform.position = activeShapeObjectSet[i].transform.position;
+                lookAheadObjects[i].transform.position += Vector3.down * movesDownAllowed;
+            }
+            else
+            {
+                lookAheadObjects[i].SetActive(false);
+            }
+        }
+    }
+
+
     public void Update()
     {
         if (isPlaying)
@@ -418,6 +463,7 @@ public class BoardManager : MonoBehaviour
             }
 
             UpdateEmptyCells();
+            UpdateLookAhead();
         }
     }
 
@@ -454,6 +500,7 @@ public class BoardManager : MonoBehaviour
             }
 
             UpdateEmptyCells();
+            UpdateLookAhead();
         }
     }
 
@@ -491,6 +538,7 @@ public class BoardManager : MonoBehaviour
             }
 
             UpdateEmptyCells();
+            UpdateLookAhead();
         }
 
         return validMove;
@@ -602,6 +650,7 @@ public class BoardManager : MonoBehaviour
             }
 
             UpdateEmptyCells();
+            UpdateLookAhead();
         }
     }
 
@@ -656,6 +705,7 @@ public class BoardManager : MonoBehaviour
                     activeShapeObjectSet[i].transform.position += newStateOffsets[i];
             }
             UpdateEmptyCells();
+            UpdateLookAhead();
         }
        
 
@@ -687,6 +737,7 @@ public class BoardManager : MonoBehaviour
             }
 
             UpdateEmptyCells();
+            UpdateLookAhead();
         }
 
         return validTurn;
@@ -731,8 +782,11 @@ public class BoardManager : MonoBehaviour
     {
         for (int i = 0; i < _outState.Length; i++)
         {
-            if (_outState[i] / BoardWidth == AdjBoardHeight - 1)
-                return false;
+            if (_outState[i] != -1)
+            {
+                if (_outState[i] / BoardWidth == AdjBoardHeight - 1)
+                    return false;
+            }
         }
 
         for (int i = 0; i < _outState.Length; i++)
@@ -748,8 +802,11 @@ public class BoardManager : MonoBehaviour
     {
         for (int i = 0; i < _outState.Length; i++)
         {
-            if (_outState[i] / BoardWidth == 0)
-                return false;
+            if (_outState[i] != -1)
+            {
+                if (_outState[i] / BoardWidth == 0)
+                    return false;
+            }
         }
 
         for (int i = 0; i < _outState.Length; i++)
@@ -1706,18 +1763,18 @@ public class BoardManager : MonoBehaviour
         return false;
     }
 
+    void CopyState(ref int[] _outState, int[] inState)
+    {
+        for (int i = 0; i < inState.Length; i++)
+        {
+            _outState[i] = inState[i];
+        }
+    }
+
     public bool AttemptWallKick(int[] currentState, RotationState curState, RotationState nextState, bool is_IPiece, out int[] _returnState, out Vector3[] _returnOffsets)
     {
         int[] checkState = new int[8];
         Vector3[] checkOffset = new Vector3[8];
-
-        void CopyState(ref int[] _outState, int[] inState)
-        {
-            for (int i = 0; i < inState.Length; i++)
-            {
-                _outState[i] = currentState[i];
-            }
-        }
 
         switch (curState)
         {

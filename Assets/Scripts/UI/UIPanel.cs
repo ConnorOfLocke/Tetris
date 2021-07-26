@@ -4,6 +4,7 @@ using UnityEngine;
 
 public abstract class UIPanel : MonoBehaviour
 {
+    [HideInInspector]
     public UIManager uiManager;
 
     public abstract void OnShow();

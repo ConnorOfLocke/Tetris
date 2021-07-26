@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   DevAccountEmail: clocke555@gmail.com
   DevAccountToken: g6ty7dcbcf4ab1puy14wxa4es7afzrxc7j5kmz94a5imjhdytqcs54sesooawjjwt33d6iiy8dsb56pefjo95do1ozbwd9axcwwsqxwn6csbfdi4u1ig4e541zi6nrryyybrcehk1kpytfn1ybsmk39wptqza6qwwet6y7xnfp5khsgz9n4swg75csbh3wgrxgdxsh7u
-  SelectedStudio: _OVERRIDE_
+  SelectedStudio: Llamahedron
   SdkPath: Assets/PlayFabSDK
   EdExPath: 
   LocalCloudScriptPath: 

@@ -18,14 +18,18 @@ public class UIManager : MonoBehaviour
 
     public void Start()
     {
-        curState = MenuState.MainMenu;
-       
+
         loginMenuUI.uiManager = this;
         mainMenuUI.uiManager = this;
         customGameUI.uiManager = this;
 
-        loginMenuUI.gameObject.SetActive(true);
-        mainMenuUI.gameObject.SetActive(false);
+        if (PlayfabManager.Player.LoggedIn)        
+            curState = MenuState.MainMenu;        
+        else        
+            curState = MenuState.LoginMenu;        
+
+        loginMenuUI.gameObject.SetActive(!PlayfabManager.Player.LoggedIn);
+        mainMenuUI.gameObject.SetActive(PlayfabManager.Player.LoggedIn);
         customGameUI.gameObject.SetActive(false);
 
         mainMenuUI.OnShow();

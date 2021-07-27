@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class PlayfabManager : MonoBehaviour
 {
+    public const string Title_ID = "18BCC";
+
     public static PlayfabManager_Login Login
     {
         get 
@@ -14,7 +16,17 @@ public class PlayfabManager : MonoBehaviour
         }
     }
 
-    public const string Title_ID = "18BCC";
+    public static PlayfabManager_Player Player
+    {
+        get
+        {
+            if (_player == null)
+                _player = new PlayfabManager_Player();
+            return _player;
+        }
+    }
+
 
     private static PlayfabManager_Login _login;
+    private static PlayfabManager_Player _player;
 }

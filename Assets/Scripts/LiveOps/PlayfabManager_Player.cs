@@ -23,12 +23,12 @@ public class PlayfabManager_Player
         PlayFabAttachedEmail = _email;
     }
 
-    public void SetUserNameLocal(string _name)
+    public void SetDisplayNameLocal(string _name)
     {
         PlayFabUserName = _name;
     }
 
-    public void SetUserName(string _name, Action<PlayFabAccountDisplayNameChangeResult> callback)
+    public void SetDisplayName(string _name, Action<PlayFabAccountDisplayNameChangeResult> callback)
     {
         PlayFabAccountDisplayNameChangeResult returnInfo = new PlayFabAccountDisplayNameChangeResult();
 
@@ -39,7 +39,7 @@ public class PlayfabManager_Player
         {
             Debug.Log($"[PlayfabManager_Player] Set Display Name Successfully - {_result.DisplayName}");
 
-            SetUserNameLocal(_name);
+            SetDisplayNameLocal(_name);
 
             returnInfo.Successfull = true;
 

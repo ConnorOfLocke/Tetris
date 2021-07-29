@@ -28,7 +28,7 @@ public class PlayfabManager_Login
                 {
                     if (_infoResult.Successfull)
                     {
-                        PlayfabManager.Player.SetUserNameLocal(_infoResult.info.AccountInfo.Username);
+                        PlayfabManager.Player.SetDisplayNameLocal(_infoResult.info.AccountInfo.TitleInfo.DisplayName);
 
                         if (onResult != null)
                             onResult.Invoke(loginResult);
@@ -127,7 +127,6 @@ public class PlayfabManager_Login
 
                         PlayfabManager.Player.SetPlayFabUserID(_result.PlayFabId);
                         PlayfabManager.Player.SetUserEmail(_email);
-                        PlayfabManager.Player.SetUserNameLocal(_result.Username);
 
                         emailResult.state = PlayFabLinkEmailResult.EmailLinkState.SuccessfullyLinkedEmail;
                         emailResult.NewUser = true;
@@ -232,7 +231,7 @@ public class PlayfabManager_Login
                 {
                     if (_infoResult.Successfull)
                     {
-                        PlayfabManager.Player.SetUserNameLocal(_infoResult.info.AccountInfo.Username);
+                        PlayfabManager.Player.SetDisplayNameLocal(_infoResult.info.AccountInfo.TitleInfo.DisplayName);
 
                         if (onResult != null)
                             onResult.Invoke(loginResult);

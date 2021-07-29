@@ -43,9 +43,6 @@ public class LoginMenuUI : UIPanel
     [SerializeField]
     TMP_Text userNameInfo;
 
-
-
-
     private bool showingCrateAccountArea = false;
 
     private bool validCreatedLogin = false;
@@ -251,7 +248,7 @@ public class LoginMenuUI : UIPanel
     {
         if (validUserName)
         {
-            PlayfabManager.Player.SetUserName(userNameSet.text, (_result) =>
+            PlayfabManager.Player.SetDisplayName(userNameSet.text, (_result) =>
             {
                 if (_result.Successfull)
                 {

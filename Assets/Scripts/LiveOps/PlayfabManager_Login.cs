@@ -255,6 +255,34 @@ public class PlayfabManager_Login
                 onResult.Invoke(loginResult);
         });
     }
+
+    public string LastEmailUsed
+    {
+        get
+        {
+            return PlayerPrefs.GetString("LastUsedEmail", "");
+        }
+        set
+        {
+            PlayerPrefs.SetString("LastUsedEmail", value);
+            PlayerPrefs.Save();
+        }
+    }
+
+    public string LastPwdUsed
+    {
+        get
+        {
+            return PlayerPrefs.GetString("LastPwdUsed", "");
+        }
+        set
+        {
+            PlayerPrefs.SetString("LastPwdUsed", value);
+            PlayerPrefs.Save();
+        }
+    }
+
+
 }
 
 public struct PlayFabLinkEmailResult

@@ -190,6 +190,9 @@ public class LoginMenuUI : UIPanel
         }
         else //success
         {
+            PlayfabManager.Login.LastEmailUsed = createEmailField.text;
+            PlayfabManager.Login.LastPwdUsed = createPwdField1.text;
+
             if (emailLinkResult.NewUser)
             {
                 SetLoginMenuState(LoginMenuState.CreateUsername);
@@ -205,6 +208,9 @@ public class LoginMenuUI : UIPanel
     {
         if (loginResult.Successfull)
         {
+            PlayfabManager.Login.LastEmailUsed = emailField.text;
+            PlayfabManager.Login.LastPwdUsed = pwdField.text;
+
             if (loginResult.NewUser)
             {
                 SetLoginMenuState(LoginMenuState.CreateUsername);

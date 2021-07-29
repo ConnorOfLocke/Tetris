@@ -6,31 +6,25 @@ public class LaunchScreen : MonoBehaviour
 {
     void Start()
     {
-        //Attempt a login
-        PlayfabManager.Login.AttemptAnonLogin(false, (result) => 
+        string lastUsedEmail = PlayfabManager.Login.LastEmailUsed;
+        if (lastUsedEmail != null)
         {
-            if (result.Successfull)
+            PlayfabManager.Login.AttemptEmailLogin(lastUsedEmail, PlayfabManager.Login.LastPwdUsed, (result) =>
             {
-                //attempt to load player data then
-                PlayfabManager.Player.GetAccountInfo((infoResult) =>
-                {
-                    if (infoResult.Successfull)
-                    {
-                        PlayfabManager.Player.SetDisplayNameLocal(infoResult.info.AccountInfo.TitleInfo.DisplayName);
-                        SceneLoader.Instance.LoadScene(SceneLoader.MenuScene);
-                    }
-                    else
-                    {
-                        SceneLoader.Instance.LoadScene(SceneLoader.MenuScene);
-                        //reset pwd
-                    }
-                });
-            }
-            else
-            {
-                //we are not logged in or something when wrong
+                Debug.Log("[LaunchScreen] Auto Email login with result " + result.Successfull);
                 SceneLoader.Instance.LoadScene(SceneLoader.MenuScene);
-            }
-        });
+            });
+        }
+        else
+        {
+            //Attempt a login
+            Debug.Log("[LaunchScreen] Attempting Anon login");
+
+            PlayfabManager.Login.AttemptAnonLogin(false, (result) =>
+            {
+                Debug.Log("[LaunchScreen] Anon login with result " + result.Successfull );
+                SceneLoader.Instance.LoadScene(SceneLoader.MenuScene);
+            });
+        }
     }
 }

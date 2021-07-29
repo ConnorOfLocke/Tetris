@@ -8,7 +8,9 @@ public class LoginMenuUI : UIPanel
     [SerializeField]
     GameObject loginAccountArea;
     [SerializeField]
-    GameObject createAccountArea;   
+    GameObject createAccountArea;
+    [SerializeField]
+    GameObject setUserNameArea;
 
     [Space(10)]
     [SerializeField]
@@ -19,7 +21,6 @@ public class LoginMenuUI : UIPanel
 
     [SerializeField]
     TMP_Text loginInfo;
-
 
     [Space(10)]
     [SerializeField]
@@ -34,14 +35,29 @@ public class LoginMenuUI : UIPanel
     [SerializeField]
     TMP_Text createLoginInfo;
 
+
+    [Space(10)]
+    [SerializeField]
+    TMP_InputField userNameSet;
+
+    [SerializeField]
+    TMP_Text userNameInfo;
+
+
+
+
     private bool showingCrateAccountArea = false;
 
     private bool validCreatedLogin = false;
+    private bool validUserName = false;
+
+    private bool newLocalUser = false;
 
     private const string isValidMessage = "Looks good";
     private const string pwdDontMatchMessage = "Passwords do not match";
     private const string pwdTooShortMessage = "Password is too short";
     private const string emailAlreadtLinkedMessage = "Email already linked to an account";
+    private const string userNameNotCorrectLength = "Username needs to be 3-20 characters";
 
     public override void OnHide()
     {
@@ -50,9 +66,29 @@ public class LoginMenuUI : UIPanel
 
     public override void OnShow()
     {
-        loginAccountArea.SetActive(true);
-        createAccountArea.SetActive(false);
+        SetLoginMenuState(LoginMenuState.LoginAccount);
     }
+
+    public void SetLoginMenuState(LoginMenuState loginState)
+    {
+        loginAccountArea.SetActive(false);
+        createAccountArea.SetActive(false);
+        setUserNameArea.SetActive(false);
+
+        switch (loginState)
+        {
+            case LoginMenuState.LoginAccount:
+                loginAccountArea.SetActive(true);
+                break;
+            case LoginMenuState.CreateAccount:
+                createAccountArea.SetActive(true);
+                break;
+            case LoginMenuState.CreateUsername:
+                setUserNameArea.SetActive(true);
+                break;
+        };
+    }
+
 
     //Login Area here
     public void OnEmailFieldChanged()
@@ -65,6 +101,7 @@ public class LoginMenuUI : UIPanel
 
     }
 
+
     public void OnCreateAccountButton()
     {
         //Anon login first to link an email to an existing account
@@ -72,19 +109,14 @@ public class LoginMenuUI : UIPanel
         {
             if (_result.Successfull)
             {
-                loginAccountArea.SetActive(false);
-                createAccountArea.SetActive(true);
+                newLocalUser = _result.NewUser;
+                SetLoginMenuState(LoginMenuState.CreateAccount);
             }
             else
             {
                 loginInfo.text = _result.error.ErrorMessage;
             }
         });
-    }
-
-    public void OnCreateAccountBackButton()
-    {
-
     }
 
     public void OnEmailLoginButton()
@@ -140,14 +172,13 @@ public class LoginMenuUI : UIPanel
         {
             string email = createEmailField.text;
             string pwd = createPwdField1.text;
-            PlayfabManager.Login.LinkEmailAndPwd(email, pwd, LinkEmailCallback);
+            PlayfabManager.Login.LinkEmailAndPwd(email, pwd, newLocalUser, LinkEmailCallback);
         }
     }
 
     public void OnBackToLogin()
     {
-        loginAccountArea.SetActive(true);
-        createAccountArea.SetActive(false);
+        SetLoginMenuState(LoginMenuState.LoginAccount);
     }
 
     private void LinkEmailCallback(PlayFabLinkEmailResult emailLinkResult)
@@ -162,14 +193,30 @@ public class LoginMenuUI : UIPanel
         }
         else //success
         {
-            uiManager.SwapToUI(UIManager.MenuState.MainMenu);
+            if (emailLinkResult.NewUser)
+            {
+                SetLoginMenuState(LoginMenuState.CreateUsername);
+            }
+            else
+            {
+                uiManager.SwapToUI(UIManager.MenuState.MainMenu);
+            }
         }
     }
 
     private void LoginCallback(PlayFabLoginResult loginResult)
     {
         if (loginResult.Successfull)
-            uiManager.SwapToUI(UIManager.MenuState.MainMenu);
+        {
+            if (loginResult.NewUser)
+            {
+                SetLoginMenuState(LoginMenuState.CreateUsername);
+            }
+            else
+            {
+                uiManager.SwapToUI(UIManager.MenuState.MainMenu);
+            }
+        }
         else
         {
             if (showingCrateAccountArea)
@@ -181,5 +228,49 @@ public class LoginMenuUI : UIPanel
                 loginInfo.text = loginResult.error.ErrorMessage;
             }
         }
+    }
+
+    //Create Username
+    public void OnNewUsernameFieldChange()
+    {
+        string checkUsername = userNameSet.text;
+        bool isValid = true;
+        if (checkUsername.Length < 3 && checkUsername.Length > 25)
+        {
+            isValid = false;
+            userNameInfo.text = userNameNotCorrectLength;
+        }
+
+        if (isValid)
+            userNameInfo.text = "";
+
+        validUserName = isValid;
+    }
+
+    public void OnNewUsernameButton()
+    {
+        if (validUserName)
+        {
+            PlayfabManager.Player.SetUserName(userNameSet.text, (_result) =>
+            {
+                if (_result.Successfull)
+                {
+                    uiManager.SwapToUI(UIManager.MenuState.MainMenu);
+                }
+                else
+                {
+                    validUserName = false;
+                    userNameInfo.text = _result.error.ErrorMessage;
+                }
+            });
+        }
+    }
+
+
+    public enum LoginMenuState
+    {
+        LoginAccount,
+        CreateAccount,
+        CreateUsername
     }
 }

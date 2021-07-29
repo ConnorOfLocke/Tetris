@@ -18,7 +18,6 @@ public class UIManager : MonoBehaviour
 
     public void Start()
     {
-
         loginMenuUI.uiManager = this;
         mainMenuUI.uiManager = this;
         customGameUI.uiManager = this;

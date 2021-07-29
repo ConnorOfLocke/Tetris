@@ -18,12 +18,33 @@ public class PlayfabManager_Login
             loginResult.NewUser = _result.NewlyCreated;
 
             PlayfabManager.Player.SetPlayFabUserID(_result.PlayFabId);
-            
-
             Debug.Log($"[PlayfabManager_Login] Successfull anon login - {_result.ToString()}");
 
-            if (onResult != null)
-                onResult.Invoke(loginResult);
+            if (!_result.NewlyCreated)
+            {
+                //Get User Info
+                Debug.Log($"[PlayfabManager_Login] Successfull anon login - {_result.ToString()}");
+                PlayfabManager.Player.GetAccountInfo((_infoResult) =>
+                {
+                    if (_infoResult.Successfull)
+                    {
+                        PlayfabManager.Player.SetUserNameLocal(_infoResult.info.AccountInfo.Username);
+
+                        if (onResult != null)
+                            onResult.Invoke(loginResult);
+                    }
+                    else
+                    {
+                        if (onResult != null)
+                            onResult.Invoke(loginResult);
+                    }
+                });
+            }
+            else
+            {
+                if (onResult != null)
+                    onResult.Invoke(loginResult);
+            }
         }
 
         void onFailure(PlayFabError _error)
@@ -70,7 +91,7 @@ public class PlayfabManager_Login
         }
     }
 
-    public void LinkEmailAndPwd(string _email, string _password, Action<PlayFabLinkEmailResult> onResult)
+    public void LinkEmailAndPwd(string _email, string _password, bool newLocalUser, Action<PlayFabLinkEmailResult> onResult)
     {
         PlayFabLinkEmailResult emailResult = new PlayFabLinkEmailResult();
 
@@ -85,13 +106,14 @@ public class PlayfabManager_Login
                     Debug.Log($"[PlayfabManager_Login] Email is already linked to this account");
 
                     emailResult.state = PlayFabLinkEmailResult.EmailLinkState.EmailAlreadyLinked;
+                    emailResult.NewUser = false;
 
                     if (onResult != null)
                         onResult.Invoke(emailResult);
                 }
                 else if (!string.IsNullOrEmpty(result.info.AccountInfo.PrivateInfo.Email))
                 {
-                    Debug.Log($"[PlayfabManager_Login] Email is already linked, making a new account");
+                    Debug.Log($"[PlayfabManager_Login] Logged in account is attached to different email, making a new account");
 
                     //Need a new account 
                     PlayFabClientAPI.RegisterPlayFabUser(new PlayFab.ClientModels.RegisterPlayFabUserRequest
@@ -105,8 +127,10 @@ public class PlayfabManager_Login
 
                         PlayfabManager.Player.SetPlayFabUserID(_result.PlayFabId);
                         PlayfabManager.Player.SetUserEmail(_email);
+                        PlayfabManager.Player.SetUserNameLocal(_result.Username);
 
                         emailResult.state = PlayFabLinkEmailResult.EmailLinkState.SuccessfullyLinkedEmail;
+                        emailResult.NewUser = true;
 
                         if (onResult != null)
                             onResult.Invoke(emailResult);
@@ -143,6 +167,7 @@ public class PlayfabManager_Login
                         Debug.Log($"[PlayfabManager_Login] Successfully linked email to account");
 
                         emailResult.state = PlayFabLinkEmailResult.EmailLinkState.SuccessfullyLinkedEmail;
+                        emailResult.NewUser = newLocalUser;
 
                         if (onResult != null)
                             onResult.Invoke(emailResult);
@@ -171,10 +196,6 @@ public class PlayfabManager_Login
                     onResult.Invoke(emailResult);
             }
         });
-
-
-
-
     }
 
     public void AttemptEmailLogin(string _email, string _password, Action<PlayFabLoginResult> onResult)
@@ -194,11 +215,35 @@ public class PlayfabManager_Login
 
             loginResult.Successfull = true;
             loginResult.NewUser = _result.NewlyCreated;
-
+            
             PlayfabManager.Player.SetPlayFabUserID(_result.PlayFabId);
 
-            if (onResult != null)
-                onResult.Invoke(loginResult);
+            //Get account info
+            if (_result.NewlyCreated)
+            {
+                //Set Username
+                if (onResult != null)
+                    onResult.Invoke(loginResult);
+            }
+            else
+            {
+                //Get User Info
+                PlayfabManager.Player.GetAccountInfo((_infoResult) =>
+                {
+                    if (_infoResult.Successfull)
+                    {
+                        PlayfabManager.Player.SetUserNameLocal(_infoResult.info.AccountInfo.Username);
+
+                        if (onResult != null)
+                            onResult.Invoke(loginResult);
+                    }
+                    else
+                    {
+                        if (onResult != null)
+                            onResult.Invoke(loginResult);
+                    }
+                });
+            }           
         },
         (_error) =>
         {
@@ -217,6 +262,7 @@ public struct PlayFabLinkEmailResult
 {
     public EmailLinkState state;
     public PlayFabError error;
+    public bool NewUser;
 
     public enum EmailLinkState
     {

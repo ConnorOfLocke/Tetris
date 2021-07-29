@@ -22,10 +22,11 @@ public class UIManager : MonoBehaviour
         mainMenuUI.uiManager = this;
         customGameUI.uiManager = this;
 
-        if (PlayfabManager.Player.LoggedIn)        
+        if (PlayfabManager.Player.LoggedIn || PlayfabManager.Player.PlayFabDisplayName != null)        
             curState = MenuState.MainMenu;        
-        else        
-            curState = MenuState.LoginMenu;        
+        else
+            curState = MenuState.LoginMenu;
+
 
         loginMenuUI.gameObject.SetActive(!PlayfabManager.Player.LoggedIn);
         mainMenuUI.gameObject.SetActive(PlayfabManager.Player.LoggedIn);

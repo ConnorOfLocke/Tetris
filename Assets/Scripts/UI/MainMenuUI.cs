@@ -11,8 +11,8 @@ public class MainMenuUI : UIPanel
 
     public override void OnShow()
     {
-        if (PlayfabManager.Player.PlayFabUserName != null)
-            userName.text = PlayfabManager.Player.PlayFabUserName;
+        if (PlayfabManager.Player.PlayFabDisplayName != null)
+            userName.text = PlayfabManager.Player.PlayFabDisplayName;        
     }
 
     public override void OnHide()

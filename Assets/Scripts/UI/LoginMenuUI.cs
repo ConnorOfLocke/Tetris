@@ -63,7 +63,10 @@ public class LoginMenuUI : UIPanel
 
     public override void OnShow()
     {
-        SetLoginMenuState(LoginMenuState.LoginAccount);
+        if (PlayfabManager.Player.LoggedIn && PlayfabManager.Player.PlayFabDisplayName == null)        
+            SetLoginMenuState(LoginMenuState.CreateUsername);        
+        else
+            SetLoginMenuState(LoginMenuState.LoginAccount);
     }
 
     public void SetLoginMenuState(LoginMenuState loginState)
@@ -211,7 +214,7 @@ public class LoginMenuUI : UIPanel
             PlayfabManager.Login.LastEmailUsed = emailField.text;
             PlayfabManager.Login.LastPwdUsed = pwdField.text;
 
-            if (loginResult.NewUser)
+            if (loginResult.NewUser || PlayfabManager.Player.PlayFabDisplayName == null)
             {
                 SetLoginMenuState(LoginMenuState.CreateUsername);
             }

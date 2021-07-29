@@ -9,7 +9,7 @@ public class PlayfabManager_Player
     public bool LoggedIn => !string.IsNullOrEmpty(PlayFabUserId);
     public string PlayFabUserId { private set; get; }
     public string PlayFabAttachedEmail { private set; get; }
-    public string PlayFabUserName { private set; get; } 
+    public string PlayFabDisplayName { private set; get; } 
 
     public void SetPlayFabUserID(string _playFabUserID)
     {
@@ -25,7 +25,7 @@ public class PlayfabManager_Player
 
     public void SetDisplayNameLocal(string _name)
     {
-        PlayFabUserName = _name;
+        PlayFabDisplayName = _name;
     }
 
     public void SetDisplayName(string _name, Action<PlayFabAccountDisplayNameChangeResult> callback)

@@ -12,6 +12,7 @@ public class BoardManager : MonoBehaviour
     public static int StartingLevel = 0;
     public static int LookAheadSteps = 3;
     public static bool ShowShapeShadow = true;
+    public static bool SendScoreAtEndOfRound = true;
 
     [SerializeField]
     private Transform prefabCellParent = null;
@@ -701,7 +702,7 @@ public class BoardManager : MonoBehaviour
         Debug.Log($"GAME Over. Press Escape to start again");
         isPlaying = false;
 
-        gameOverUI.InitialiseAndShow(Score, linesCleared, curLevel, () => {
+        gameOverUI.InitialiseAndShow(Score, linesCleared, curLevel, BoardManager.SendScoreAtEndOfRound, () => {
             ResetBoard();
         });
     }

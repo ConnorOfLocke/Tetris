@@ -11,16 +11,22 @@ public class GameOverUI : MonoBehaviour
     private GameObject originObject;
 
     [SerializeField]
-    TMP_Text gameOverText;
+    private TMP_Text gameOverText;
 
     [SerializeField]
-    Text scoreText;
+    private Text scoreText;
 
     [SerializeField]
-    Text linesClearedText;
+    private Text linesClearedText;
 
     [SerializeField]
-    Text levelReachedText;
+    private Text levelReachedText;
+
+    [SerializeField]
+    private LeaderboardUI leaderboardUI;
+
+    [SerializeField]
+    private GameObject leaderboardUIOrigin;
 
     private Action onRestartCallback;
 
@@ -29,7 +35,7 @@ public class GameOverUI : MonoBehaviour
         originObject.SetActive(false);
     }
 
-    public void InitialiseAndShow(long _score, int _linesCleared, int _levelReached, Action _OnRestart)
+    public void InitialiseAndShow(long _score, int _linesCleared, int _levelReached, bool useLeaderboard, Action _OnRestart)
     {
         originObject.SetActive(true);
         gameOverText.text = GameOverLines[UnityEngine.Random.Range(0, GameOverLines.Length)];
@@ -37,6 +43,27 @@ public class GameOverUI : MonoBehaviour
         linesClearedText.text = $"Lines: {_linesCleared}";
         levelReachedText.text = $"Level: {_levelReached}";
 
+        if (useLeaderboard)
+        {
+            leaderboardUIOrigin.SetActive(true);
+            leaderboardUI.ShowLoadingObject(true);
+
+            PlayfabManager.Leaderboards.SetPlayerStatistic(PlayfabManager_Leaderboards.QuickPlayScore, (int)_score, (_result) => 
+            { 
+                if (_result.successfull)
+                {
+                    leaderboardUI.InitLeaderboard(PlayfabManager_Leaderboards.QuickPlayScore, (success) => {
+                        leaderboardUI.ShowLoadingObject(false);
+                    });
+                }
+            });
+
+        }
+        else
+        {
+            leaderboardUIOrigin.SetActive(false);
+        }
+        
         onRestartCallback = _OnRestart;
     }
 

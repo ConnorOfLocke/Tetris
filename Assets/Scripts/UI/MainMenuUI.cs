@@ -27,6 +27,12 @@ public class MainMenuUI : UIPanel
 
     public void OnQuickGameButton()
     {
+        BoardManager.StartingLevel = 0;
+        BoardManager.LookAheadSteps = 3;
+        BoardManager.ShowShapeShadow = true;
+        BoardManager.SendScoreAtEndOfRound = true;
+
+
         SceneLoader.Instance.LoadScene(SceneLoader.GameScene);
     }
 

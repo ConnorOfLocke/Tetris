@@ -26,7 +26,18 @@ public class PlayfabManager : MonoBehaviour
         }
     }
 
+    public static PlayfabManager_Leaderboards Leaderboards
+    {
+        get
+        {
+            if (_leaderboards == null)
+                _leaderboards = new PlayfabManager_Leaderboards();
+            return _leaderboards;
+        }
+    }
+
 
     private static PlayfabManager_Login _login;
     private static PlayfabManager_Player _player;
+    private static PlayfabManager_Leaderboards _leaderboards;
 }

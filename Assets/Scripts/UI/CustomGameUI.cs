@@ -52,6 +52,7 @@ public class CustomGameUI : UIPanel
         BoardManager.StartingLevel = selectedLevel;
         BoardManager.LookAheadSteps = lookAheadMoves;
         BoardManager.ShowShapeShadow = true;
+        BoardManager.SendScoreAtEndOfRound = false;
 
         SceneLoader.Instance.LoadScene(SceneLoader.GameScene);
     }

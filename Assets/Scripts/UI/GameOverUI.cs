@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using Newtonsoft.Json;
 
 public class GameOverUI : MonoBehaviour
 {
@@ -48,16 +49,19 @@ public class GameOverUI : MonoBehaviour
             leaderboardUIOrigin.SetActive(true);
             leaderboardUI.ShowLoadingObject(true);
 
-            PlayfabManager.Leaderboards.SetPlayerStatistic(PlayfabManager_Leaderboards.QuickPlayScore, (int)_score, (_result) => 
-            { 
+            PlayfabManager.CallCloudScript("SetPlayerScore", new {                 
+                statisticName = PlayfabManager_Leaderboards.QuickPlayScore,
+                score = (int)_score
+            }, (_result) => 
+            {
                 if (_result.successfull)
                 {
-                    leaderboardUI.InitLeaderboard(PlayfabManager_Leaderboards.QuickPlayScore, (success) => {
-                        leaderboardUI.ShowLoadingObject(false);
-                    });
+                    Dictionary<string, string> result = JsonConvert.DeserializeObject<Dictionary<string, string>>(_result.returnValue.ToString());
+                    int highestScore = int.Parse(result["highestPlayerScore"]);
+
+                    StartCoroutine(InitLeaderboardAfterDelay());
                 }
             });
-
         }
         else
         {
@@ -65,6 +69,16 @@ public class GameOverUI : MonoBehaviour
         }
         
         onRestartCallback = _OnRestart;
+    }
+
+    public IEnumerator InitLeaderboardAfterDelay()
+    {
+        //this is to let the leaderboard catch up after we have updated our score
+        yield return new WaitForSeconds(3.0f);
+
+        leaderboardUI.InitLeaderboard(PlayfabManager_Leaderboards.QuickPlayScore, (success) => {
+            leaderboardUI.ShowLoadingObject(false);
+        });
     }
 
     public void OnRestartButtonPressed()

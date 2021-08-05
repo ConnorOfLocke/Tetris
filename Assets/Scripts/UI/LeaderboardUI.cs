@@ -35,7 +35,7 @@ public class LeaderboardUI : MonoBehaviour
             }
         }
 
-        PlayfabManager.Leaderboards.GetLeaderboardEntries(leaderboardStatisticName, 10, (_result) =>
+        PlayfabManager.Leaderboards.GetLeaderboardEntriesAroundPlayer(leaderboardStatisticName, 10, (_result) =>
         {
             if (_result.successfull)
             {

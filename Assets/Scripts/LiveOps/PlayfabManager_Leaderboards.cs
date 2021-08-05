@@ -43,6 +43,40 @@ public class PlayfabManager_Leaderboards
         });
     }
 
+    public void GetLeaderboardEntriesAroundPlayer(string statisticName, int maxResults, Action<PlayFabLeaderboardResult> callback)
+    {
+        Debug.Log($"[PlayfabManager_Leaderboards] Attempting leaderboard around player to get entries for {statisticName}");
+
+        PlayFabLeaderboardResult returnVal = new PlayFabLeaderboardResult();
+
+        PlayFabClientAPI.GetLeaderboardAroundPlayer(new PlayFab.ClientModels.GetLeaderboardAroundPlayerRequest
+        {
+            StatisticName = statisticName,
+            MaxResultsCount = maxResults,
+            PlayFabId = PlayfabManager.Player.PlayFabUserId
+        },
+        (_result) =>
+        {
+            Debug.Log($"[PlayfabManager_Leaderboards] Successfully retrieved leaderboard entries around player  {statisticName}");
+
+            returnVal.successfull = true;
+            returnVal.leaderboardEntries = _result.Leaderboard;
+
+            if (callback != null)
+                callback.Invoke(returnVal);
+        },
+        (_error) =>
+        {
+            Debug.Log($"[PlayfabManager_Leaderboards] Failed to get leaderboard around player entries {_error.GenerateErrorReport()}");
+
+            returnVal.successfull = false;
+            returnVal.error = _error;
+
+            if (callback != null)
+                callback.Invoke(returnVal);
+        });
+    }
+
     public void SetPlayerStatistic(string statisticName, int value, Action<PlayFabSetStatisticResult> callback)
     {
         Debug.Log($"[PlayfabManager_Leaderboards] Attempting to update statistic for {statisticName}");
@@ -67,8 +101,7 @@ public class PlayfabManager_Leaderboards
         },
         (_error) => 
         {
-            Debug.Log($"[PlayfabManager_Leaderboards] Failed to update statistic for {statisticName}");
-            Debug.Log($"[PlayfabManager_Leaderboards] Failed to update statistic for {_error.GenerateErrorReport()}");
+            Debug.Log($"[PlayfabManager_Leaderboards] Failed to update statistic for {statisticName} with error {_error.GenerateErrorReport()}");
             returnObject.successfull = false;
             returnObject.error = _error;
 

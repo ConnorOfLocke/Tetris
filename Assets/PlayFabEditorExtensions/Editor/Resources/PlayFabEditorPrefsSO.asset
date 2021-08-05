@@ -17,7 +17,7 @@ MonoBehaviour:
   SelectedStudio: Llamahedron
   SdkPath: Assets/PlayFabSDK
   EdExPath: 
-  LocalCloudScriptPath: 
+  LocalCloudScriptPath: C:/Users/clock/Desktop/Projects/Tetris/Assets/Scripts/LiveOps/Cloudscipts/Cloudscript.js
   PanelIsShown: 0
-  curMainMenuIdx: 1
+  curMainMenuIdx: 4
   curSubMenuIdx: 0

@@ -31,7 +31,7 @@ public class BoardCell : MonoBehaviour
         if (isAwaitingOffset)
         {
             delayedOffset += _offset;
-            Debug.Log($"DelayedOffset {delayedOffset}");
+            //Debug.Log($"DelayedOffset {delayedOffset}");
         }
         else
         {

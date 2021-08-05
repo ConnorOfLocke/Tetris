@@ -24,6 +24,10 @@ public class GameOverUI : MonoBehaviour
     private Text levelReachedText;
 
     [SerializeField]
+    private Text highestScoreText;
+
+
+    [SerializeField]
     private LeaderboardUI leaderboardUI;
 
     [SerializeField]
@@ -48,6 +52,8 @@ public class GameOverUI : MonoBehaviour
         {
             leaderboardUIOrigin.SetActive(true);
             leaderboardUI.ShowLoadingObject(true);
+            highestScoreText.gameObject.SetActive(true);
+            highestScoreText.text = "Highest Score: Loading";
 
             PlayfabManager.CallCloudScript("SetPlayerScore", new {                 
                 statisticName = PlayfabManager_Leaderboards.QuickPlayScore,
@@ -59,6 +65,8 @@ public class GameOverUI : MonoBehaviour
                     Dictionary<string, string> result = JsonConvert.DeserializeObject<Dictionary<string, string>>(_result.returnValue.ToString());
                     int highestScore = int.Parse(result["highestPlayerScore"]);
 
+                    highestScoreText.text = $"Highest Score: {highestScore}";
+
                     StartCoroutine(InitLeaderboardAfterDelay());
                 }
             });
@@ -66,6 +74,7 @@ public class GameOverUI : MonoBehaviour
         else
         {
             leaderboardUIOrigin.SetActive(false);
+            highestScoreText.gameObject.SetActive(false);
         }
         
         onRestartCallback = _OnRestart;

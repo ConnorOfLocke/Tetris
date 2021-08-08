@@ -26,7 +26,6 @@ public class GameOverUI : MonoBehaviour
     [SerializeField]
     private Text highestScoreText;
 
-
     [SerializeField]
     private LeaderboardUI leaderboardUI;
 

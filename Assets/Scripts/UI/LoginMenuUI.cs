@@ -196,14 +196,17 @@ public class LoginMenuUI : UIPanel
             PlayfabManager.Login.LastEmailUsed = createEmailField.text;
             PlayfabManager.Login.LastPwdUsed = createPwdField1.text;
 
-            if (emailLinkResult.NewUser)
+            PlayfabManager.UserData.UpdatePlayerData((result) =>
             {
-                SetLoginMenuState(LoginMenuState.CreateUsername);
-            }
-            else
-            {
-                uiManager.SwapToUI(UIManager.MenuState.MainMenu);
-            }
+                if (emailLinkResult.NewUser)
+                {
+                    SetLoginMenuState(LoginMenuState.CreateUsername);
+                }
+                else
+                {
+                    uiManager.SwapToUI(UIManager.MenuState.MainMenu);
+                }
+            });
         }
     }
 
@@ -214,14 +217,17 @@ public class LoginMenuUI : UIPanel
             PlayfabManager.Login.LastEmailUsed = emailField.text;
             PlayfabManager.Login.LastPwdUsed = pwdField.text;
 
-            if (loginResult.NewUser || PlayfabManager.Player.PlayFabDisplayName == null)
+            PlayfabManager.UserData.UpdatePlayerData((result) =>
             {
-                SetLoginMenuState(LoginMenuState.CreateUsername);
-            }
-            else
-            {
-                uiManager.SwapToUI(UIManager.MenuState.MainMenu);
-            }
+                if (loginResult.NewUser || PlayfabManager.Player.PlayFabDisplayName == null)
+                {
+                    SetLoginMenuState(LoginMenuState.CreateUsername);
+                }
+                else
+                {
+                    uiManager.SwapToUI(UIManager.MenuState.MainMenu);
+                }
+            });
         }
         else
         {
@@ -235,6 +241,7 @@ public class LoginMenuUI : UIPanel
             }
         }
     }
+
 
     //Create Username
     public void OnNewUsernameFieldChange()

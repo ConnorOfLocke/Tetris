@@ -26,6 +26,10 @@ public class CustomGameUI : UIPanel
 
     public override void OnShow()
     {
+        selectedLevel = PlayfabManager.UserData.PlayerData.CustomGame_StartLevel;
+        lookAheadMoves = PlayfabManager.UserData.PlayerData.CustomGame_LookAhread;
+        useShadowToggle.isOn = PlayfabManager.UserData.PlayerData.CustomGame_ShowShadow;
+
         levelSlider.value = ((float)selectedLevel / (float)maxSelectedLevel);
         lookAheadSlider.value = ((float)lookAheadMoves / (float)maxLookAheadMoves);
     }
@@ -51,10 +55,17 @@ public class CustomGameUI : UIPanel
     {
         BoardManager.StartingLevel = selectedLevel;
         BoardManager.LookAheadSteps = lookAheadMoves;
-        BoardManager.ShowShapeShadow = true;
+        BoardManager.ShowShapeShadow = useShadowToggle.isOn;
         BoardManager.SendScoreAtEndOfRound = false;
 
-        SceneLoader.Instance.LoadScene(SceneLoader.GameScene);
+        PlayfabManager.UserData.PlayerData.CustomGame_StartLevel = selectedLevel;
+        PlayfabManager.UserData.PlayerData.CustomGame_LookAhread = lookAheadMoves;
+        PlayfabManager.UserData.PlayerData.CustomGame_ShowShadow = useShadowToggle.isOn;
+
+        PlayfabManager.UserData.UploadPlayerData((result) => 
+        {            
+            SceneLoader.Instance.LoadScene(SceneLoader.GameScene);
+        });
     }
 
     public void OnBackButtonPressed()

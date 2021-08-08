@@ -27,7 +27,6 @@ public class UIManager : MonoBehaviour
         else
             curState = MenuState.LoginMenu;
 
-
         loginMenuUI.gameObject.SetActive(!PlayfabManager.Player.LoggedIn);
         mainMenuUI.gameObject.SetActive(PlayfabManager.Player.LoggedIn);
         customGameUI.gameObject.SetActive(false);

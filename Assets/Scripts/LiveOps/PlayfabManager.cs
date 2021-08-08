@@ -38,6 +38,16 @@ public class PlayfabManager : MonoBehaviour
         }
     }
 
+    public static PlayfabManager_UserData UserData
+    {
+        get
+        {
+            if (_userData == null)
+                _userData = new PlayfabManager_UserData();
+            return _userData;
+        }
+    }
+
     public static void CallCloudScript(string functionName, object functionParams, Action<CallCloudScriptResult> _callback)
     {
         CallCloudScriptResult callScriptResult = new CallCloudScriptResult();
@@ -95,6 +105,7 @@ public class PlayfabManager : MonoBehaviour
     private static PlayfabManager_Login _login;
     private static PlayfabManager_Player _player;
     private static PlayfabManager_Leaderboards _leaderboards;
+    private static PlayfabManager_UserData _userData;
 
     public struct CallCloudScriptResult
     {
@@ -102,5 +113,4 @@ public class PlayfabManager : MonoBehaviour
         public PlayFabError error;
         public string returnValue;
     }
-
 }

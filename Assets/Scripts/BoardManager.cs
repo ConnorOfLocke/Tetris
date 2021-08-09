@@ -14,6 +14,8 @@ public class BoardManager : MonoBehaviour
     public static bool ShowShapeShadow = true;
     public static bool SendScoreAtEndOfRound = true;
 
+    public static bool Paused = false;
+
     [SerializeField]
     private Transform prefabCellParent = null;
 
@@ -32,6 +34,9 @@ public class BoardManager : MonoBehaviour
 
     [SerializeField]
     private GameOverUI gameOverUI;
+
+    [SerializeField]
+    private PauseUI pauseUI;
 
     [SerializeField]
     private BoardInput boardInput;
@@ -359,16 +364,29 @@ public class BoardManager : MonoBehaviour
 
     public void Update()
     {
-        if (isPlaying)
+        if (isPlaying && !Paused)
         {
             UpdateSteps();
         }
 
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (Input.GetKeyDown(KeyCode.Escape) && !Paused)
         {
-            ResetBoard();
+            PauseGame(true);
+        }        
+    }
+
+    public void PauseGame(bool pauseState)
+    {
+        if (pauseState)
+        {
+            Paused = true;
+            pauseUI.ShowPauseUI();
         }
-        
+        else
+        {
+            Paused = false;
+            pauseUI.ShowPauseUI();
+        }
     }
 
     public void UpdateSteps()
@@ -398,7 +416,7 @@ public class BoardManager : MonoBehaviour
 
     public void OnInputMove(Direction direction)
     {
-        if (!isPlaying || lineClearPause > 0)
+        if (!isPlaying || lineClearPause > 0 || Paused)
             return;
 
         switch (direction)
@@ -423,7 +441,7 @@ public class BoardManager : MonoBehaviour
 
     public void OnInputRotate(bool isLeft)
     {
-        if (!isPlaying)
+        if (!isPlaying || lineClearPause > 0 || Paused)
             return;
 
         if (isLeft)        
@@ -434,7 +452,7 @@ public class BoardManager : MonoBehaviour
 
     public void OnInputSlam()
     {
-        if (!isPlaying)
+        if (!isPlaying || lineClearPause > 0 || Paused)
             return;
 
         while (MoveDownSimple()) { }

@@ -12,6 +12,17 @@ public class PauseUI : MonoBehaviour
         originObject.SetActive(false);
     }
 
+    public void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            if (!BoardManager.Paused)
+                OnPauseButtonPressed();
+            else
+                OnQuitButtonPressed();
+        }
+    }
+
     public void ShowPauseUI()
     {
         originObject.SetActive(true);
@@ -37,6 +48,14 @@ public class PauseUI : MonoBehaviour
     public void OnQuitButtonPressed()
     {
         SceneLoader.Instance.LoadScene(SceneLoader.MenuScene);
+    }
+
+    public void OnApplicationPause(bool pause)
+    {
+        if (pause)
+        {
+            OnPauseButtonPressed();
+        }
     }
 
 }

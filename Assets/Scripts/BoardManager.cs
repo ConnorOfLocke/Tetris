@@ -368,11 +368,6 @@ public class BoardManager : MonoBehaviour
         {
             UpdateSteps();
         }
-
-        if (Input.GetKeyDown(KeyCode.Escape) && !Paused)
-        {
-            PauseGame(true);
-        }        
     }
 
     public void PauseGame(bool pauseState)
@@ -717,7 +712,6 @@ public class BoardManager : MonoBehaviour
     private void OnGameOver()
     {
         //Game Over
-        Debug.Log($"GAME Over. Press Escape to start again");
         isPlaying = false;
 
         gameOverUI.InitialiseAndShow(Score, linesCleared, curLevel, BoardManager.SendScoreAtEndOfRound, () => {
